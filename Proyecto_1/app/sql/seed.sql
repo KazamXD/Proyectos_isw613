@@ -39,10 +39,16 @@ INSERT INTO categorias (categoria_nombre, dias_max_prestamo) VALUES
 -- 5. USUARIOS
 -- (Nota: Los hashes son inventados solo para que la BD no marque error)
 INSERT INTO usuarios (rol_id, nombre, apellido, email, nom_usuario, password_hash, desactivado_en) VALUES 
-(1, 'Carlos', 'Admin', 'carlos@empresa.com', 'cadmin', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', NULL), -- Activo
+(1, 'Carlos', 'Admin', 'carlos@empresa.com', 'cadmin', '$2y$10$XE0wNra/.p078Yu9YSyOSuN5n/7.y2gkA5.LGnVAFpU4CN0A2OK6K', NULL), -- Activo
 (2, 'Ana', 'Operadora', 'ana@empresa.com', 'aoperadora', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', NULL), -- Activa
 (3, 'Luis', 'Empleado', 'luis@empresa.com', 'lempleado', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', NULL), -- Activo
 (3, 'Marta', 'Inactiva', 'marta@empresa.com', 'minactiva', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', '2023-10-01 10:00:00'); -- Desactivada
+
+UPDATE usuarios
+SET password_hash = '$2y$10$XE0wNra/.p078Yu9YSyOSuN5n/7.y2gkA5.LGnVAFpU4CN0A2OK6K'
+WHERE nom_usuario = 'cadmin';
+
+SELECT * FROM usuarios WHERE id  = 1;
 
 -- 6. EQUIPOS
 INSERT INTO equipos (id_categoria, codigo, nombre_estado, ruta_imagen) VALUES 

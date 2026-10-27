@@ -2,7 +2,7 @@
 $servername = "projects.local"; // I should change this to my actual server name
 $username = "root";
 $password = "";
-$dbname = "Workshop_2"; // I should change this to my actual database name
+$dbname = "equipo_computo"; // I should change this to my actual database name
 
 $dsn = "mysql:host=$servername;dbname=$dbname;charset=utf8mb4";
 $conn = new PDO($dsn, $username, $password, [
