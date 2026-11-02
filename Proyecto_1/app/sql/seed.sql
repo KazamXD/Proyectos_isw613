@@ -45,8 +45,16 @@ INSERT INTO usuarios (rol_id, nombre, apellido, email, nom_usuario, password_has
 (3, 'Marta', 'Inactiva', 'marta@empresa.com', 'minactiva', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', '2023-10-01 10:00:00'); -- Desactivada
 
 UPDATE usuarios
-SET password_hash = '$2y$10$XE0wNra/.p078Yu9YSyOSuN5n/7.y2gkA5.LGnVAFpU4CN0A2OK6K'
+SET password_hash = '$2y$10$fDaokWln/eoTwAF9ybjTreIRw/WGtxDl.xQfXPyHVpS8SHP0vmHh6'
 WHERE nom_usuario = 'cadmin';
+
+UPDATE usuarios
+SET password_hash = CASE nom_usuario
+    WHEN 'aoperadora' THEN '$2y$12$6ZA.zltbJfFmQb9XWJAUbucl0tGBIk6/hK/EnqCucsb3fATXfZ5SC'
+    WHEN 'lempleado' THEN '$2y$12$Dmk34j0V01jNDawEHrmqb.QZE9UxI1uDQaY2RY6e.WP0gH55ISaY.'
+    ELSE password_hash
+END
+WHERE nom_usuario IN ('aoperadora', 'lempleado');
 
 SELECT * FROM usuarios WHERE id  = 1;
 

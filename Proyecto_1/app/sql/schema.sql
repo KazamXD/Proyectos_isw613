@@ -18,6 +18,14 @@ CREATE TABLE categorias (
     dias_max_prestamo INT NOT NULL DEFAULT 7
 );
 
+ALTER TABLE categorias
+ADD COLUMN eliminado_en TIMESTAMP NULL DEFAULT NULL;
+
+SELECT
+    categoria_id,
+    categoria_nombre,
+    eliminado_en
+FROM categorias;
 
 CREATE TABLE usuarios (
     id              INT PRIMARY KEY AUTO_INCREMENT,
@@ -106,7 +114,32 @@ CREATE TABLE prestamo_detalle (
 );
 
 
+SELECT VERSION();
 
+SELECT r.nombre_rol, p.clave
+FROM rol_permiso rp
+JOIN rol r ON r.id_rol = rp.rol_id
+JOIN permisos p ON p.id_permiso = rp.permiso_id
+WHERE p.clave = 'usuarios.ver';
+
+
+
+INSERT IGNORE INTO permisos (clave)
+VALUES ('usuarios.ver');
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+JOIN permisos p ON p.clave = 'usuarios.ver'
+WHERE r.nombre_rol = 'Administrador';
+
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, id_permiso
+FROM permisos
+WHERE clave = 'usuarios.ver';
+
+select * from rol
 
 
 
