@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../includes/csrf.php';
 
 // Verificar que el usuario tenga permiso
 requerirPermiso($conn, 'usuarios.crear');
@@ -12,6 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../pages/user_form.php');
     exit;
 }
+
+// Validar el token CSRF
+$tokenRecibido = $_POST['csrf_token'] ?? '';
+
+if (
+    !is_string($tokenRecibido) ||
+    !validarTokenCSRF($tokenRecibido)
+) {
+    http_response_code(403);
+    exit('Solicitud no autorizada.');
+}
+
 
 // Obtener los datos del formulario
 $nombre = trim($_POST['nombre'] ?? '');

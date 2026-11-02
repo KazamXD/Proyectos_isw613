@@ -3,10 +3,11 @@
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../includes/csrf.php';
 
 // Solo usuarios autorizados pueden crear usuarios
 requerirPermiso($conn, 'usuarios.crear');
-
+$tokenCSRF = generarTokenCSRF();
 // Obtener los roles disponibles
 $stmt = $conn->prepare("
     SELECT id_rol, nombre_rol
@@ -43,6 +44,16 @@ $roles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 ?>
 <form action="../actions/create_user.php" method="POST">
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= htmlspecialchars(
+            $tokenCSRF,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8'
+        ) ?>"
+    >
+
     <div>
         <label for="nombre">Nombre:</label>
         <input
