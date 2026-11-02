@@ -15,17 +15,9 @@ CREATE TABLE permisos (
 CREATE TABLE categorias (
     categoria_id     INT PRIMARY KEY AUTO_INCREMENT,
     categoria_nombre VARCHAR(50) NOT NULL,
-    dias_max_prestamo INT NOT NULL DEFAULT 7
+    dias_max_prestamo INT NOT NULL DEFAULT 7,
+    eliminado_en TIMESTAMP NULL DEFAULT NULL;
 );
-
-ALTER TABLE categorias
-ADD COLUMN eliminado_en TIMESTAMP NULL DEFAULT NULL;
-
-SELECT
-    categoria_id,
-    categoria_nombre,
-    eliminado_en
-FROM categorias;
 
 CREATE TABLE usuarios (
     id              INT PRIMARY KEY AUTO_INCREMENT,
@@ -36,7 +28,7 @@ CREATE TABLE usuarios (
     nom_usuario     VARCHAR(50) NOT NULL UNIQUE,
     password_hash   VARCHAR(255) NOT NULL,
     intento_ingreso INT NOT NULL DEFAULT 3,
-    desactivado_en  TIMESTAMP NULL DEFAULT NULL, /*para saber cuanto tiempo lleva desconectado*/
+    desactivado_en  TIMESTAMP NULL DEFAULT NULL, /*para saber cuando se desactivó*/
     activo          BOOLEAN AS (desactivado_en IS NULL) VIRTUAL,
     CONSTRAINT fk_usuarios_rol
         FOREIGN KEY (rol_id) REFERENCES rol(id_rol)
@@ -97,12 +89,13 @@ CREATE TABLE prestamos (
     usuario_id       INT NOT NULL,
     operador_id      INT NOT NULL,
     fecha_entrega    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,	 /*cuando se dio el equipo, fue prestado*/
-    fecha_limite     DATE NOT NULL, 						 /*cuando se debe devolver o tiempo limite*/
+    fecha_limite     DATETIME NOT NULL, 						 /*cuando se debe devolver o tiempo limite*/
     fecha_devolucion TIMESTAMP NULL DEFAULT NULL,			 /*Cuando devolvieron el equipo*/
     estado           ENUM('prestado', 'devuelto', 'retrasado') DEFAULT 'prestado',
     CONSTRAINT fk_prestamos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     CONSTRAINT fk_prestamos_operador FOREIGN KEY (operador_id) REFERENCES usuarios(id)
 );
+
 
 CREATE TABLE prestamo_detalle (
     prestamo_id     INT NOT NULL,
@@ -124,23 +117,47 @@ WHERE p.clave = 'usuarios.ver';
 
 
 
-INSERT IGNORE INTO permisos (clave)
-VALUES ('usuarios.ver');
-
-INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
-SELECT r.id_rol, p.id_permiso
-FROM rol r
-JOIN permisos p ON p.clave = 'usuarios.ver'
-WHERE r.nombre_rol = 'Administrador';
-
-
-INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
-SELECT 1, id_permiso
-FROM permisos
-WHERE clave = 'usuarios.ver';
-
 select * from rol
 
+
+DESCRIBE prestamos;
+
+
+SHOW CREATE TABLE prestamos;
+
+SHOW TABLES;
+
+SELECT
+    r.nombre_rol,
+    p.clave
+FROM rol r
+INNER JOIN rol_permiso rp
+    ON r.id_rol = rp.rol_id
+INNER JOIN permisos p
+    ON rp.permiso_id = p.id_permiso
+WHERE r.id_rol = 1
+  AND p.clave = 'prestamos.ver';
+
+
+
+SELECT
+    p.id_prestamo,
+    pd.equipo_id,
+    e.codigo
+FROM prestamos p
+LEFT JOIN prestamo_detalle pd
+    ON p.id_prestamo = pd.prestamo_id
+LEFT JOIN equipos e
+    ON pd.equipo_id = e.id_equipo;
+
+
+SELECT *
+FROM prestamos
+ORDER BY id_prestamo DESC;
+
+SELECT *
+FROM prestamo_detalle
+ORDER BY prestamo_id DESC;
 
 
 

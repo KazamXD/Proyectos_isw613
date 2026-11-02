@@ -64,9 +64,20 @@ $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
 
     <a href="../actions/logout.php">Cerrar sesión</a>
 
-
+    <!-- Ver usuarios -->
     <?php if (tienePermiso($conn, 'usuarios.ver')): ?>
         <a href="users.php">Gestionar usuarios</a>
     <?php endif; ?>
+
+    <!-- Ver equipos -->
+    <?php if (tienePermiso($conn, 'equipos.ver')): ?>
+        <a href="equipment.php">Consultar equipos</a>
+    <?php endif; ?>
+
+    <!-- Ver préstamos -->
+    <?php if (tienePermiso($conn, 'prestamos.ver')): ?>
+        <a href="loans.php">Consultar préstamos</a>
+    <?php endif; ?>
+
 </body>
 </html>

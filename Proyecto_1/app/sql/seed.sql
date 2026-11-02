@@ -144,6 +144,69 @@ WHERE e.eliminado_en IS NULL
 ORDER BY e.id_equipo ASC;
 
 
+SELECT
+    r.nombre_rol,
+    p.clave
+FROM rol r
+INNER JOIN rol_permiso rp
+    ON r.id_rol = rp.rol_id
+INNER JOIN permisos p
+    ON rp.permiso_id = p.id_permiso
+WHERE r.id_rol = 1
+ORDER BY p.clave;
+
+
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, p.id_permiso
+FROM permisos p
+WHERE p.clave = 'equipos.ver'
+AND NOT EXISTS (
+    SELECT 1
+    FROM rol_permiso rp
+    WHERE rp.rol_id = 1
+      AND rp.permiso_id = p.id_permiso
+);
+
+INSERT IGNORE INTO permisos (clave)
+VALUES ('usuarios.ver');
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+JOIN permisos p ON p.clave = 'usuarios.ver'
+WHERE r.nombre_rol = 'Administrador';
+
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, id_permiso
+FROM permisos
+WHERE clave = 'usuarios.ver';
+
+
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, p.id_permiso
+FROM permisos p
+WHERE p.clave = 'prestamos.ver'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM rol_permiso rp
+      WHERE rp.rol_id = 1
+        AND rp.permiso_id = p.id_permiso
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
