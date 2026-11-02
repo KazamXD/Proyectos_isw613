@@ -1,9 +1,7 @@
 
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
 
 // Comprobar si hay un usuario autenticado
 function estaAutenticado(): bool
@@ -15,7 +13,7 @@ function estaAutenticado(): bool
 function requerirLogin(): void
 {
     if (!estaAutenticado()) {
-        header('Location: ../public/index.php');
+        header('Location: /Proyecto_1/app/public/index.php');
         exit;
     }
 }

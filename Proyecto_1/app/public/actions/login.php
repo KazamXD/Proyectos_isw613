@@ -1,7 +1,6 @@
 
 <?php
-session_start();
-
+require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../config/connection.php';
 
 // Solo aceptar solicitudes del formulario
@@ -48,6 +47,7 @@ try {
     $_SESSION['usuario_id'] = $user['id'];
     $_SESSION['nombre_usuario'] = $user['nombre'];
     $_SESSION['rol_id'] = $user['rol_id'];
+    $_SESSION['ultima_actividad'] = time();
 
     // Registrar inicio de sesión en la bitácora
     $stmt_log = $conn->prepare(

@@ -101,19 +101,13 @@ INSERT INTO bitacora (usuario_id, accion, entidad, entidad_id, valores_antes, va
 
 
 
-SELECT 
-    p.id_prestamo,
-    u.nombre AS usuario,
-    op.nombre AS operador,
-    e.codigo AS equipo,
-    p.estado,
-    p.fecha_limite
-FROM prestamos p
-JOIN usuarios u ON p.usuario_id = u.id
-JOIN usuarios op ON p.operador_id = op.id
-JOIN prestamo_detalle pd ON p.id_prestamo = pd.prestamo_id
-JOIN equipos e ON pd.equipo_id = e.id_equipo;
-
+DELETE FROM rol_permiso
+WHERE rol_id = 2
+AND permiso_id IN (
+    SELECT id_permiso
+    FROM permisos
+    WHERE clave IN ('equipos.crear', 'equipos.editar')
+);
 
 
 
