@@ -68,7 +68,8 @@ $stmt = $conn->prepare("
         e.id_equipo,
         e.codigo,
         c.categoria_nombre,
-        e.nombre_estado
+        e.nombre_estado,
+        e.ruta_imagen
     FROM equipos e
     INNER JOIN categorias c
         ON e.id_categoria = c.categoria_id
@@ -148,6 +149,7 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>Código</th>
                 <th>Categoría</th>
                 <th>Estado</th>
+                <th>Imagen</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -159,6 +161,18 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= htmlspecialchars($equipo['codigo'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8') ?></td>
                     <td><?= htmlspecialchars($equipo['categoria_nombre'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8') ?></td>
                     <td><?= htmlspecialchars($equipo['nombre_estado'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8'   ) ?></td>
+
+                    <td>
+                        <?php if (!empty($equipo['ruta_imagen'])): ?>
+                            <img
+                                src="../uploads/equipment/<?= rawurlencode($equipo['ruta_imagen']) ?>"
+                                alt="Imagen del equipo"
+                                width="90"
+                            >
+                        <?php else: ?>
+                            Sin imagen
+                        <?php endif; ?>
+                    </td>
 
                     <td>
                         <?php if (tienePermiso($conn, 'equipos.editar')): ?>
