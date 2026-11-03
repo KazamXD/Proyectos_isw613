@@ -1,8 +1,10 @@
 <?php
 date_default_timezone_set('America/Costa_Rica');
+
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/bitacora.php';
 
 requerirPermiso($conn, 'prestamos.crear');
 
@@ -28,15 +30,6 @@ $usuarioId = filter_var(
 
 $equiposIds = $_POST['equipos'] ?? [];
 $fechaLimite = $_POST['fecha_limite'] ?? '';
-
-echo 'Zona horaria de PHP: ' . date_default_timezone_get() . '<br>';
-echo 'Hora actual de PHP: ' . date('Y-m-d H:i:s') . '<br>';
-echo 'Fecha recibida: ' . htmlspecialchars(
-    is_string($fechaLimite) ? $fechaLimite : '',
-    ENT_QUOTES | ENT_SUBSTITUTE,
-    'UTF-8'
-);
-exit;
 
 $operadorId = (int) $_SESSION['usuario_id'];
 
@@ -211,6 +204,22 @@ try {
             'equipo_id' => $equipoId
         ]);
     }
+
+    registrarBitacora(
+        $conn,
+        $operadorId,
+        'CREATE',
+        'prestamos',
+        $prestamoId,
+        null,
+        [
+            'usuario_id' => $usuarioId,
+            'operador_id' => $operadorId,
+            'fecha_limite' => $fechaLimite,
+            'equipos' => $idsValidados,
+            'estado' => 'prestado'
+        ]
+    );
 
     // Confirmar todos los cambios
     $conn->commit();

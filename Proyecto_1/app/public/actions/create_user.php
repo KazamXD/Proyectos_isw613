@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/bitacora.php';
 
 // Verificar que el usuario tenga permiso
 requerirPermiso($conn, 'usuarios.crear');
@@ -89,11 +90,6 @@ try {
         exit;
     }
 
-    if ($stmt->fetchColumn() > 0) {
-        header('Location: ../pages/user_form.php?error=duplicado');
-        exit;
-    }
-
     // Verificar que el rol exista
     $stmt = $conn->prepare("
         SELECT COUNT(*)
@@ -109,10 +105,14 @@ try {
     }
 
     // Generar hash seguro de la contraseña
+        // Generar hash seguro de la contraseña
     $passwordHash = password_hash(
         $password,
         PASSWORD_DEFAULT
     );
+
+    // Iniciar transacción
+    $conn->beginTransaction();
 
     // Insertar usuario
     $stmt = $conn->prepare("
@@ -131,11 +131,40 @@ try {
         'rol_id' => $rol_id
     ]);
 
+    // Obtener el ID del nuevo usuario
+    $nuevoUsuarioId = (int) $conn->lastInsertId();
+
+    // Registrar creación en la bitácora
+    registrarBitacora(
+        $conn,
+        (int) $_SESSION['usuario_id'],
+        'CREATE',
+        'usuarios',
+        $nuevoUsuarioId,
+        null,
+        [
+            'nombre' => $nombre,
+            'apellido' => $apellido,
+            'email' => $email,
+            'nom_usuario' => $nom_usuario,
+            'rol_id' => $rol_id
+        ]
+    );
+
+    // Confirmar ambas operaciones
+    $conn->commit();
+
     // Volver al listado
     header('Location: ../pages/users.php?success=creado');
     exit;
 
-} catch (PDOException $e) {
+} catch (Throwable $e) {
+
+    // Cancelar cambios si ocurre un error
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+
     error_log('Error al crear usuario: ' . $e->getMessage());
 
     header('Location: ../pages/user_form.php?error=sistema');

@@ -160,5 +160,150 @@ FROM prestamo_detalle
 ORDER BY prestamo_id DESC;
 
 
+SELECT
+    usuario_id,
+    accion,
+    entidad,
+    entidad_id,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE accion = 'CREATE'
+  AND entidad = 'usuarios'
+ORDER BY creado_en DESC
+LIMIT 5;
+
+select * from usuarios where id = 5;
+
+
+
+SELECT
+    usuario_id,
+    accion,
+    entidad,
+    entidad_id,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'prestamos'
+ORDER BY creado_en DESC;
+
+
+SELECT
+    id_prestamo,
+    estado,
+    fecha_devolucion
+FROM prestamos
+WHERE id_prestamo = 5;
+
+
+SELECT * FROM prestamos;
+
+SELECT
+    id_prestamo,
+    fecha_limite,
+    fecha_devolucion,
+    estado
+FROM prestamos
+ORDER BY id_prestamo DESC;
+
+
+SELECT
+    accion,
+    entidad,
+    entidad_id,
+    valores_antes,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'prestamos'
+ORDER BY creado_en DESC;
+
+
+SELECT
+    accion,
+    entidad,
+    entidad_id,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'equipos'
+ORDER BY creado_en DESC;
+
+SELECT
+    usuario_id,
+    accion,
+    entidad,
+    entidad_id,
+    valores_antes,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'equipos'
+  AND accion = 'UPDATE'
+ORDER BY creado_en DESC;
+
+
+SELECT
+    r.nombre_rol,
+    p.clave
+FROM rol r
+INNER JOIN rol_permiso rp
+    ON r.id_rol = rp.rol_id
+INNER JOIN permisos p
+    ON rp.permiso_id = p.id_permiso
+WHERE r.id_rol = 1
+  AND p.clave = 'equipos.eliminar';
+
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, p.id_permiso
+FROM permisos p
+WHERE p.clave = 'equipos.eliminar'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM rol_permiso rp
+      WHERE rp.rol_id = 1
+        AND rp.permiso_id = p.id_permiso
+  );
+
+
+SELECT * FROM permisos;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

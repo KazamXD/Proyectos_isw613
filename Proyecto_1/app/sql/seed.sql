@@ -18,6 +18,9 @@ INSERT INTO permisos (clave) VALUES
 ('prestamos.devolver'),
 ('reportes.ver');
 
+INSERT INTO permisos (clave) VALUES
+('equipos.eliminar');
+
 -- 3. ROL_PERMISO (Asignando permisos a roles)
 -- Administrador (tiene todos los permisos 1 al 8)
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES 
@@ -65,6 +68,36 @@ INSERT INTO equipos (id_categoria, codigo, nombre_estado, ruta_imagen) VALUES
 (1, 'LAP-003', 'Mantenimiento', NULL),
 (2, 'PROY-001', 'Disponible', '/img/proy001.jpg'),
 (3, 'CABLE-HDMI-01', 'Disponible', NULL);
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'LAP-004', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Laptops';
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'LAP-005', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Laptops';
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'PROY-002', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Proyectores';
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'PROY-003', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Proyectores';
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'CABLE-HDMI-02', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Cables y Adaptadores';
+
+INSERT INTO equipos (id_categoria, codigo, nombre_estado)
+SELECT categoria_id, 'CABLE-HDMI-03', 'Disponible'
+FROM categorias
+WHERE categoria_nombre = 'Cables y Adaptadores';
 
 -- 7. PRESTAMOS
 -- Préstamo 1: A Luis, operado por Ana. Salió hoy, vence en 7 días. Aún no lo devuelve.
@@ -194,11 +227,15 @@ WHERE p.clave = 'prestamos.ver'
         AND rp.permiso_id = p.id_permiso
   );
 
+SELECT
+    id_equipo,
+    codigo,
+    nombre_estado,
+    eliminado_en
+FROM equipos
+ORDER BY id_equipo DESC;
 
-
-
-
-
+SELECT * FROM bitacora;
 
 
 
