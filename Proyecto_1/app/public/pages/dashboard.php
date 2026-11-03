@@ -79,5 +79,10 @@ $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
         <a href="loans.php">Consultar préstamos</a>
     <?php endif; ?>
 
+    <!-- Ver categorías -->
+    <?php if (tienePermiso($conn, 'categorias.ver')): ?>
+        <a href="categories.php">Gestionar categorías</a>
+    <?php endif; ?>
+
 </body>
 </html>

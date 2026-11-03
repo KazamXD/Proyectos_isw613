@@ -3,9 +3,13 @@
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../includes/csrf.php';
 
 // Solo usuarios con este permiso
 requerirPermiso($conn, 'usuarios.ver');
+
+$tokenCSRF = generarTokenCSRF();
+$puedeEliminar = tienePermiso($conn, 'usuarios.eliminar');
 
 // Obtener búsqueda y paginación
 $busqueda = trim($_GET['buscar'] ?? '');
@@ -76,83 +80,154 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 
-<h1>Gestión de Usuarios</h1>
+    <h1>Gestión de Usuarios</h1>
 
-<?php if (($_GET['success'] ?? '') === 'creado'): ?>
-    <p>Usuario registrado correctamente.</p>
-<?php endif; ?>
+    <!-- Mensajes de error o éxito -->
+    <?php if (($_GET['success'] ?? '') === 'creado'): ?>
+        <p>Usuario registrado correctamente.</p>
+    <?php endif; ?>
 
-<form method="GET">
-    <input
-        type="text"
-        name="buscar"
-        placeholder="Buscar usuario..."
-        value="<?= htmlspecialchars($busqueda) ?>"
-    >
+    <?php if (($_GET['success'] ?? '') === 'editado'): ?>
+        <p style="color: green;">
+            Usuario actualizado correctamente.
+        </p>
+    <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
+        <p>No se realizaron cambios.</p>
+    <?php endif; ?>
 
-    <select name="cantidad">
-        <?php foreach ([5, 10, 20, 50] as $cantidad): ?>
-            <option value="<?= $cantidad ?>"
-                <?= $porPagina === $cantidad ? 'selected' : '' ?>>
-                <?= $cantidad ?> registros
-            </option>
-        <?php endforeach; ?>
-    </select>
+    <?php
+    $mensajes = [
+        'eliminado' => 'Usuario desactivado correctamente.',
+        'propio' => 'No puedes desactivar tu propia cuenta.',
+        'prestamos' => 'El usuario tiene préstamos pendientes de devolución.',
+        'no_disponible' => 'El usuario no existe o ya fue desactivado.',
+        'sistema' => 'No se pudo desactivar el usuario.'
+    ];
 
-    <button type="submit">Buscar</button>
-</form>
+    $success = $_GET['success'] ?? '';
+    $error = $_GET['error'] ?? '';
 
-<hr>
-
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Usuario</th>
-            <th>ID Rol</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($usuarios as $usuario): ?>
-            <tr>
-                <td><?= (int) $usuario['id'] ?></td>
-                <td><?= htmlspecialchars($usuario['nombre']) ?></td>
-                <td><?= htmlspecialchars($usuario['nom_usuario']) ?></td>
-                <td><?= (int) $usuario['rol_id'] ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
-
-<p>
-    Página <?= $pagina ?> de <?= $totalPaginas ?>
-    (<?= $totalRegistros ?> registros)
-</p>
-
-<?php if ($pagina > 1): ?>
-    <a href="?<?= http_build_query([
-        'buscar' => $busqueda,
-        'cantidad' => $porPagina,
-        'pagina' => $pagina - 1
-    ]) ?>">Anterior</a>
-<?php endif; ?>
-
-<?php if ($pagina < $totalPaginas): ?>
-    <a href="?<?= http_build_query([
-        'buscar' => $busqueda,
-        'cantidad' => $porPagina,
-        'pagina' => $pagina + 1
-    ]) ?>">Siguiente</a>
-<?php endif; ?>
-
-<p><a href="dashboard.php">Volver al dashboard</a></p>
-
-    <?php if (tienePermiso($conn, 'usuarios.crear')): ?>
-        <p>
-            <a href="user_form.php">Crear nuevo usuario</a>
+    if ($success === 'eliminado'): ?>
+        <p style="color: green;">
+            <?= htmlspecialchars($mensajes['eliminado'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+        </p>
+    <?php elseif (is_string($error) && isset($mensajes[$error])): ?>
+        <p style="color: red;">
+            <?= htmlspecialchars($mensajes[$error], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
         </p>
     <?php endif; ?>
+
+    <form method="GET">
+        <input
+            type="text"
+            name="buscar"
+            placeholder="Buscar usuario..."
+            value="<?= htmlspecialchars($busqueda) ?>"
+        >
+
+        <select name="cantidad">
+            <?php foreach ([5, 10, 20, 50] as $cantidad): ?>
+                <option value="<?= $cantidad ?>"
+                    <?= $porPagina === $cantidad ? 'selected' : '' ?>>
+                    <?= $cantidad ?> registros
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <button type="submit">Buscar</button>
+    </form>
+
+    <hr>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>ID Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($usuarios as $usuario): ?>
+                <tr>
+                    <td><?= (int) $usuario['id'] ?></td>
+                    <td><?= htmlspecialchars($usuario['nombre']) ?></td>
+                    <td><?= htmlspecialchars($usuario['nom_usuario']) ?></td>
+                    <td><?= (int) $usuario['rol_id'] ?></td>
+
+                    <td>
+                        <?php if (tienePermiso($conn, 'usuarios.editar')): ?>
+                            <a href="edit_user.php?id=<?= (int)$usuario['id'] ?>">
+                                Editar
+                            </a>
+                        <?php endif; ?>
+                        <?php if (
+                            $puedeEliminar &&
+                            (int)$usuario['id'] !== (int)$_SESSION['usuario_id']
+                        ): ?>
+                            <form
+                                action="../actions/delete_user.php"
+                                method="POST"
+                                style="display: inline;"
+                                onsubmit="return confirm('¿Seguro que deseas desactivar este usuario?');"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="<?= htmlspecialchars(
+                                        $tokenCSRF,
+                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                        'UTF-8'
+                                    ) ?>"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="usuario_id"
+                                    value="<?= (int)$usuario['id'] ?>"
+                                >
+                                <button type="submit">
+                                    Eliminar
+                                </button>
+                            </form>
+
+                        <?php endif; ?>
+                    </td>
+
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <p>
+        Página <?= $pagina ?> de <?= $totalPaginas ?>
+        (<?= $totalRegistros ?> registros)
+    </p>
+
+    <?php if ($pagina > 1): ?>
+        <a href="?<?= http_build_query([
+            'buscar' => $busqueda,
+            'cantidad' => $porPagina,
+            'pagina' => $pagina - 1
+        ]) ?>">Anterior</a>
+    <?php endif; ?>
+
+    <?php if ($pagina < $totalPaginas): ?>
+        <a href="?<?= http_build_query([
+            'buscar' => $busqueda,
+            'cantidad' => $porPagina,
+            'pagina' => $pagina + 1
+        ]) ?>">Siguiente</a>
+    <?php endif; ?>
+
+    <p><a href="dashboard.php">Volver al dashboard</a></p>
+
+        <?php if (tienePermiso($conn, 'usuarios.crear')): ?>
+            <p>
+                <a href="user_form.php">Crear nuevo usuario</a>
+            </p>
+        <?php endif; ?>
 
 </body>
 </html>

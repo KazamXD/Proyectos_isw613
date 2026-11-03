@@ -270,7 +270,10 @@ WHERE p.clave = 'equipos.eliminar'
 SELECT * FROM permisos;
 
 
-
+SELECT id_permiso, clave
+FROM permisos
+WHERE clave LIKE 'categorias.%'
+ORDER BY clave;
 
 
 

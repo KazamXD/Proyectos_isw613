@@ -238,14 +238,77 @@ ORDER BY id_equipo DESC;
 SELECT * FROM bitacora;
 
 
+SELECT
+    id_equipo,
+    codigo,
+    ruta_imagen
+FROM equipos
+WHERE ruta_imagen IS NOT NULL;
 
 
+INSERT INTO permisos (clave)
+SELECT 'categorias.ver'
+WHERE NOT EXISTS (
+    SELECT 1 FROM permisos WHERE clave = 'categorias.ver'
+);
 
+INSERT INTO permisos (clave)
+SELECT 'categorias.crear'
+WHERE NOT EXISTS (
+    SELECT 1 FROM permisos WHERE clave = 'categorias.crear'
+);
 
+INSERT INTO permisos (clave)
+SELECT 'categorias.editar'
+WHERE NOT EXISTS (
+    SELECT 1 FROM permisos WHERE clave = 'categorias.editar'
+);
 
+INSERT INTO permisos (clave)
+SELECT 'categorias.eliminar'
+WHERE NOT EXISTS (
+    SELECT 1 FROM permisos WHERE clave = 'categorias.eliminar'
+);
 
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, p.id_permiso
+FROM permisos p
+WHERE p.clave IN (
+    'categorias.ver',
+    'categorias.crear',
+    'categorias.editar',
+    'categorias.eliminar'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM rol_permiso rp
+    WHERE rp.rol_id = 1
+      AND rp.permiso_id = p.id_permiso
+);
 
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, p.id_permiso
+FROM permisos p
+WHERE p.clave = 'usuarios.editar'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM rol_permiso rp
+      WHERE rp.rol_id = 1
+        AND rp.permiso_id = p.id_permiso
+  );
 
+SELECT
+    usuario_id,
+    accion,
+    entidad,
+    entidad_id,
+    valores_antes,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'usuarios'
+  AND accion = 'UPDATE'
+ORDER BY creado_en DESC;
 
 
 
