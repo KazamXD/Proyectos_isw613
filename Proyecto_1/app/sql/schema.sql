@@ -75,14 +75,13 @@ CREATE TABLE bitacora (
 CREATE TABLE auth_tokens (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     usuario_id      INT NOT NULL,
-    selector        CHAR(12) NOT NULL UNIQUE,     /*buscador token*/
+    selector        CHAR(18) NOT NULL UNIQUE,     /*buscador token*/
     validator_hash  CHAR(64) NOT NULL,            /*Validador hash256*/
-    expira_en       TIMESTAMP NOT NULL,
+    expira_en       TIMESTAMP NULL default NULL,
     CONSTRAINT fk_auth_tokens_usuario
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         ON DELETE CASCADE
 );
-
 
 CREATE TABLE prestamos (
     id_prestamo      INT PRIMARY KEY AUTO_INCREMENT,
@@ -276,16 +275,37 @@ WHERE clave LIKE 'categorias.%'
 ORDER BY clave;
 
 
+SELECT
+    accion,
+    entidad,
+    entidad_id,
+    valores_antes,
+    valores_despues,
+    creado_en
+FROM bitacora
+WHERE entidad = 'categorias'
+ORDER BY creado_en DESC;
+
+SELECT
+    r.nombre_rol,
+    p.clave
+FROM rol r
+INNER JOIN rol_permiso rp
+    ON r.id_rol = rp.rol_id
+INNER JOIN permisos p
+    ON rp.permiso_id = p.id_permiso
+WHERE r.id_rol = 1
+  AND p.clave = 'usuarios.editar';
+
+SHOW CREATE TABLE auth_tokens;
 
 
-
-
-
-
-
-
-
-
+SELECT
+    id,
+    usuario_id,
+    selector,
+    expira_en
+FROM auth_tokens;
 
 
 

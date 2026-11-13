@@ -2,6 +2,7 @@
 <?php
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../includes/remember.php';
 
 // Solo aceptar solicitudes del formulario
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -48,6 +49,16 @@ try {
     $_SESSION['nombre_usuario'] = $user['nombre'];
     $_SESSION['rol_id'] = $user['rol_id'];
     $_SESSION['ultima_actividad'] = time();
+
+    // Revocar cualquier token anterior de este navegador
+    revocarRemember($conn);
+
+    // Comprobar si el usuario activó "Recordarme"
+    $recordarme = ($_POST['recordarme'] ?? '') === '1';
+
+    if ($recordarme) {
+        crearRemember($conn, (int) $user['id']);
+    }
 
     // Registrar inicio de sesión en la bitácora
     $stmt_log = $conn->prepare(

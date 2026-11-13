@@ -43,6 +43,15 @@ $error = $_GET['error'] ?? '';
             required
         >
 
+        <label>
+            <input
+                type="checkbox"
+                name="recordarme"
+                value="1"
+            >
+            Recordarme durante 14 días
+        </label>
+
         <button type="submit">Entrar</button>
     </form>
 </body>

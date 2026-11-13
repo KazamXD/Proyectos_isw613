@@ -91,6 +91,14 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <h1>Equipos registrados</h1>
 
+    <?php if (tienePermiso($conn, 'equipos.ver')): ?>
+        <p>
+            <a href="../actions/export_equipment.php">
+                Exportar equipos a CSV
+            </a>
+        </p>
+    <?php endif; ?>
+
     <?php if (($_GET['success'] ?? '') === 'creado'): ?>
         <p style="color: green;">
             Equipo registrado correctamente.

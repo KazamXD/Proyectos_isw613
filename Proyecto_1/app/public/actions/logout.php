@@ -2,6 +2,32 @@
 <?php
 
 require_once __DIR__ . '/../../includes/session.php';
+require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../includes/remember.php';
+
+// Revocar la credencial persistente del navegador
+try {
+    revocarRemember($conn);
+} catch (Throwable $e) {
+    error_log('Error al revocar Recordarme: ' . $e->getMessage());
+
+    // No confirmar un cierre de sesión completo
+    // si el token persistente no pudo ser revocado.
+    http_response_code(503);
+    exit('No se pudo completar el cierre de sesión. Inténtalo nuevamente.');
+}
+
+// Revocar la credencial persistente del navegador
+try {
+    revocarRemember($conn);
+} catch (Throwable $e) {
+    error_log('Error al revocar Recordarme: ' . $e->getMessage());
+
+    // No confirmar un cierre de sesión completo
+    // si el token persistente no pudo ser revocado.
+    http_response_code(503);
+    exit('No se pudo completar el cierre de sesión. Inténtalo nuevamente.');
+}
 
 // Vaciar todas las variables de sesión
 $_SESSION = [];

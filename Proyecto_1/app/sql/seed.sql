@@ -307,8 +307,8 @@ SELECT
     creado_en
 FROM bitacora
 WHERE entidad = 'usuarios'
-  AND accion = 'UPDATE'
+  AND accion = 'DELETE'
 ORDER BY creado_en DESC;
 
-
+SHOW CREATE TABLE auth_tokens;
 
