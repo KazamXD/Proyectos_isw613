@@ -82,6 +82,14 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <h1>Gestión de Usuarios</h1>
 
+    <?php if (tienePermiso($conn, 'usuarios.ver')): ?>
+        <p>
+            <a href="../actions/export_users.php">
+                Exportar usuarios a CSV
+            </a>
+        </p>
+    <?php endif; ?>
+
     <!-- Mensajes de error o éxito -->
     <?php if (($_GET['success'] ?? '') === 'creado'): ?>
         <p>Usuario registrado correctamente.</p>

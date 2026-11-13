@@ -56,6 +56,14 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <body>
         <h1>Listado de préstamos</h1>
 
+        <?php if (tienePermiso($conn, 'prestamos.ver')): ?>
+            <p>
+                <a href="../actions/export_loans.php">
+                    Exportar préstamos a CSV
+                </a>
+            </p>
+        <?php endif; ?>
+
     <p>
     Permiso para devolver:
         <?= $puedeDevolver ? 'SÍ' : 'NO' ?>

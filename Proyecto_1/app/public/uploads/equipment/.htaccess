@@ -1,0 +1,21 @@
+# Desactivar la ejecución de scripts CGI
+Options -ExecCGI
+
+# Impedir que Apache interprete archivos como PHP
+<FilesMatch "\.(php[0-9]?|phtml|phar)(\..*)?$">
+    Require all denied
+</FilesMatch>
+
+# Permitir acceso únicamente a imágenes con nombres generados
+<FilesMatch "^[a-f0-9]{32}\.(jpg|png|webp)$">
+    SetHandler none
+    Require all granted
+</FilesMatch>
+
+# Denegar el acceso HTTP al resto de los archivos
+<FilesMatch "^(?![a-f0-9]{32}\.(jpg|png|webp)$).+">
+    Require all denied
+</FilesMatch>
+
+# Evitar que Apache muestre el contenido del directorio
+Options -Indexes

@@ -1,3 +1,27 @@
-*
-!.gitignore
-!.htaccess
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración del editor
+.vscode/
+
+# Dependencias
+/vendor/
+/node_modules/
+
+# Archivos temporales
+*.log
+*.tmp
+*.bak
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos de configuración local
+config/local.php
+config/database.local.php
+
+# Archivos temporales de PHP
+*.cache
