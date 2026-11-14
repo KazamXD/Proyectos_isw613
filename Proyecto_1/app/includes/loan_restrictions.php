@@ -2,6 +2,7 @@
 
 
 // Función para verificar si un usuario tiene préstamos retrasados
+// Se conecta con la bd y utiliza un identificador de usuario para determinar si hay préstamos que no han sido devueltos y cuya fecha límite ya ha pasado.
 function tienePrestamosRetrasados(PDO $conn, int $usuarioId): bool
 {
     $stmt = $conn->prepare("
@@ -18,4 +19,4 @@ function tienePrestamosRetrasados(PDO $conn, int $usuarioId): bool
     ]);
 
     return $stmt->fetchColumn() !== false;
-}
+}   

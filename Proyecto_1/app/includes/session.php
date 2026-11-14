@@ -2,6 +2,7 @@
 <?php
 
 // Tiempo máximo de inactividad: 15 minutos
+//El tiempo de inactividad se define en segundos
 const TIEMPO_INACTIVIDAD = 900;
 
 if (session_status() === PHP_SESSION_NONE) {

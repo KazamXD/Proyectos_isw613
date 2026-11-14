@@ -1,4 +1,3 @@
-
 USE equipo_computo;
 
 -- 1. ROLES
@@ -43,21 +42,9 @@ INSERT INTO categorias (categoria_nombre, dias_max_prestamo) VALUES
 -- (Nota: Los hashes son inventados solo para que la BD no marque error)
 INSERT INTO usuarios (rol_id, nombre, apellido, email, nom_usuario, password_hash, desactivado_en) VALUES 
 (1, 'Carlos', 'Admin', 'carlos@empresa.com', 'cadmin', '$2y$10$XE0wNra/.p078Yu9YSyOSuN5n/7.y2gkA5.LGnVAFpU4CN0A2OK6K', NULL), -- Activo
-(2, 'Ana', 'Operadora', 'ana@empresa.com', 'aoperadora', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', NULL), -- Activa
-(3, 'Luis', 'Empleado', 'luis@empresa.com', 'lempleado', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', NULL), -- Activo
+(2, 'Ana', 'Operadora', 'ana@empresa.com', 'aoperadora', '$2y$12$6ZA.zltbJfFmQb9XWJAUbucl0tGBIk6/hK/EnqCucsb3fATXfZ5SC', NULL), -- Activa
+(3, 'Luis', 'Empleado', 'luis@empresa.com', 'lempleado', '$2y$12$Dmk34j0V01jNDawEHrmqb.QZE9UxI1uDQaY2RY6e.WP0gH55ISaY.', NULL), -- Activo
 (3, 'Marta', 'Inactiva', 'marta@empresa.com', 'minactiva', '$2y$10$e8.wT.wT.wT.wT.wT.wT.wu', '2023-10-01 10:00:00'); -- Desactivada
-
-UPDATE usuarios
-SET password_hash = '$2y$10$fDaokWln/eoTwAF9ybjTreIRw/WGtxDl.xQfXPyHVpS8SHP0vmHh6'
-WHERE nom_usuario = 'cadmin';
-
-UPDATE usuarios
-SET password_hash = CASE nom_usuario
-    WHEN 'aoperadora' THEN '$2y$12$6ZA.zltbJfFmQb9XWJAUbucl0tGBIk6/hK/EnqCucsb3fATXfZ5SC'
-    WHEN 'lempleado' THEN '$2y$12$Dmk34j0V01jNDawEHrmqb.QZE9UxI1uDQaY2RY6e.WP0gH55ISaY.'
-    ELSE password_hash
-END
-WHERE nom_usuario IN ('aoperadora', 'lempleado');
 
 SELECT * FROM usuarios WHERE id  = 1;
 
@@ -249,7 +236,7 @@ WHERE ruta_imagen IS NOT NULL;
 INSERT INTO permisos (clave)
 SELECT 'categorias.ver'
 WHERE NOT EXISTS (
-    SELECT 1 FROM permisos WHERE clave = 'categorias.ver'
+    SELECT 1 FROM permisos WHERE clave = 'categorias.ve r'
 );
 
 INSERT INTO permisos (clave)
@@ -286,6 +273,21 @@ AND NOT EXISTS (
       AND rp.permiso_id = p.id_permiso
 );
 
+INSERT IGNORE INTO permisos (clave) VALUES
+('solicitudes.crear'),
+('solicitudes.ver_propias'),
+('solicitudes.ver_todas'),
+('solicitudes.aprobar'),
+('solicitudes.rechazar'),
+('solicitudes.cancelar');
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Administrador'
+  AND p.clave LIKE 'solicitudes.%';
+
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT 1, p.id_permiso
 FROM permisos p
@@ -296,6 +298,44 @@ WHERE p.clave = 'usuarios.editar'
       WHERE rp.rol_id = 1
         AND rp.permiso_id = p.id_permiso
   );
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Operador de Préstamos'
+  AND p.clave IN (
+      'solicitudes.crear',
+      'solicitudes.ver_propias',
+      'solicitudes.ver_todas',
+      'solicitudes.aprobar',
+      'solicitudes.rechazar',
+      'solicitudes.cancelar'
+  );
+
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Usuario Estándar'
+  AND p.clave IN (
+      'solicitudes.crear',
+      'solicitudes.ver_propias',
+      'solicitudes.cancelar'
+  );
+
+SELECT * FROM usuarios u 
+
+SELECT
+    r.nombre_rol,
+    p.clave
+FROM rol_permiso rp
+INNER JOIN rol r
+    ON rp.rol_id = r.id_rol
+INNER JOIN permisos p
+    ON rp.permiso_id = p.id_permiso
+WHERE p.clave LIKE 'solicitudes.%'
+ORDER BY r.id_rol, p.clave;
 
 SELECT
     usuario_id,
@@ -311,4 +351,51 @@ WHERE entidad = 'usuarios'
 ORDER BY creado_en DESC;
 
 SHOW CREATE TABLE auth_tokens;
+
+SELECT * FROM bitacora b where b.accion = 'create';
+
+
+SELECT
+    s.id_solicitud,
+    u.nom_usuario,
+    s.fecha_inicio,
+    s.fecha_fin,
+    s.estado
+FROM solicitudes s
+INNER JOIN usuarios u
+    ON s.usuario_id = u.id
+ORDER BY s.id_solicitud DESC;
+
+SELECT * FROM solicitud_detalle
+join equipos e on equipo_id = e.id_equipo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

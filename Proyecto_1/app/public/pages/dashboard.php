@@ -84,5 +84,26 @@ $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
         <a href="categories.php">Gestionar categorías</a>
     <?php endif; ?>
 
+    <!-- Ver solicitudes de préstamos -->
+     <?php if (tienePermiso($conn, 'solicitudes.crear')): ?>
+        <p>
+            <a href="request_form.php">
+                Solicitar equipos
+            </a>
+        </p>
+    <?php endif; ?>
+
+    <!-- Ver solicitudes de préstamos -->
+     <?php if (
+        tienePermiso($conn, 'solicitudes.ver_todas') ||
+        tienePermiso($conn, 'solicitudes.ver_propias')
+        ): ?>
+        <p>
+            <a href="requests.php">
+                Ver solicitudes
+            </a>
+        </p>
+    <?php endif; ?>
+
 </body>
 </html>

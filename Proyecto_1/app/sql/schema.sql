@@ -105,8 +105,44 @@ CREATE TABLE prestamo_detalle (
     CONSTRAINT fk_detalle_equipo FOREIGN KEY (equipo_id) REFERENCES equipos(id_equipo) 
 );
 
+CREATE TABLE solicitudes (
+    id_solicitud INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    fecha_solicitud TIMESTAMP
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_inicio DATETIME NOT NULL,
+    fecha_fin DATETIME NOT NULL,
+    estado ENUM(
+        'pendiente',
+        'aprobada',
+        'rechazada',
+        'cancelada'
+    ) NOT NULL DEFAULT 'pendiente',
+    revisado_por INT NULL,
+    fecha_revision TIMESTAMP NULL DEFAULT NULL,
+    motivo_rechazo VARCHAR(255) NULL,
+    CONSTRAINT fk_solicitudes_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id),
+    CONSTRAINT fk_solicitudes_revisor
+        FOREIGN KEY (revisado_por)
+        REFERENCES usuarios(id)
+);
 
-SELECT VERSION();
+CREATE TABLE solicitud_detalle (
+    solicitud_id INT NOT NULL,
+    equipo_id INT NOT NULL,
+    PRIMARY KEY (solicitud_id, equipo_id),
+    CONSTRAINT fk_solicitud_detalle_solicitud
+        FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes(id_solicitud)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_solicitud_detalle_equipo
+        FOREIGN KEY (equipo_id)
+        REFERENCES equipos(id_equipo)
+);
+
+SHOW TABLES LIKE 'solicitud%';
 
 SELECT r.nombre_rol, p.clave
 FROM rol_permiso rp
