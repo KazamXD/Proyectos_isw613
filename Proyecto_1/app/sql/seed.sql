@@ -370,7 +370,16 @@ SELECT * FROM solicitud_detalle
 join equipos e on equipo_id = e.id_equipo
 
 
-
+SELECT
+    id_solicitud,
+    usuario_id,
+    fecha_inicio,
+    fecha_fin,
+    estado,
+    revisado_por,
+    fecha_revision
+FROM solicitudes
+ORDER BY id_solicitud DESC;
 
 
 

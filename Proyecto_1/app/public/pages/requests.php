@@ -12,6 +12,7 @@ $puedeVerTodas = tienePermiso($conn, 'solicitudes.ver_todas');
 $puedeVerPropias = tienePermiso($conn, 'solicitudes.ver_propias');
 $puedeAprobar = tienePermiso($conn, 'solicitudes.aprobar');
 $puedeRechazar = tienePermiso($conn, 'solicitudes.rechazar');   
+$puedeCancelar = tienePermiso($conn, 'solicitudes.cancelar');
 $tokenCSRF = generarTokenCSRF();
 
 //Negar acceso si no tiene permisos para ver solicitudes
@@ -25,6 +26,7 @@ if (!$puedeVerTodas && !$puedeVerPropias) {
 $sql = "
     SELECT
         s.id_solicitud,
+        s.usuario_id,
         u.nom_usuario,
         s.fecha_inicio,
         s.fecha_fin,
@@ -75,6 +77,13 @@ $solicitudes = $stmt->fetchAll(PDO::FETCH_ASSOC);
      <?php if (($_GET['success'] ?? '') === 'rechazada'): ?>
         <p style="color: green;">
             Solicitud rechazada correctamente.
+        </p>
+    <?php endif; ?>
+
+    <!-- Mostrar mensaje de éxito si la solicitud fue cancelada -->
+     <?php if (($_GET['success'] ?? '') === 'cancelada'): ?>
+        <p style="color: green;">
+            Solicitud cancelada correctamente.
         </p>
     <?php endif; ?>
 
@@ -186,6 +195,38 @@ $solicitudes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php else: ?>
                             Sin acciones
                         <?php endif; ?>
+
+                        <?php if (
+                        $puedeCancelar &&
+                        $solicitud['estado'] === 'pendiente' &&
+                        (int) $solicitud['usuario_id'] === (int) $_SESSION['usuario_id']
+                        ): ?>
+                        <form
+                            action="../actions/cancel_request.php"
+                            method="POST"
+                            style="display:inline;"
+                            onsubmit="return confirm('¿Seguro que deseas cancelar esta solicitud?');"
+                        >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="<?= htmlspecialchars(
+                                    $tokenCSRF,
+                                    ENT_QUOTES | ENT_SUBSTITUTE,
+                                    'UTF-8'
+                                ) ?>"
+                            >
+                            <input
+                                type="hidden"
+                                name="solicitud_id"
+                                value="<?= (int) $solicitud['id_solicitud'] ?>"
+                            >
+                            <button type="submit">
+                                Cancelar
+                            </button>
+                        </form>
+
+                    <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
