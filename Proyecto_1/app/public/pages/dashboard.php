@@ -114,5 +114,14 @@ $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
         </p>
     <?php endif; ?>
 
+    <!-- Ver reportes de préstamos retrasados -->
+    <?php if (tienePermiso($conn, 'reportes.ver')): ?>
+        <p>
+            <a href="reports.php">
+                Consultar reportes
+            </a>
+        </p>
+    <?php endif; ?>
+
 </body>
 </html>

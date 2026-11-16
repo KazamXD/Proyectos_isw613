@@ -8,13 +8,39 @@ INSERT INTO rol (nombre_rol) VALUES
 
 -- 2. PERMISOS
 INSERT INTO permisos (clave) VALUES 
+
+-- Usuarios
+('usuarios.ver'),
 ('usuarios.crear'),
 ('usuarios.editar'),
 ('usuarios.eliminar'),
+
+-- Categorías
+('categorias.ver'),
+('categorias.crear'),
+('categorias.editar'),
+('categorias.eliminar'),
+
+-- Equipos
+('equipos.ver'),
 ('equipos.crear'),
 ('equipos.editar'),
+('equipos.eliminar'),
+
+-- Préstamos
+('prestamos.ver'),
 ('prestamos.crear'),
 ('prestamos.devolver'),
+
+-- Solicitudes
+('solicitudes.crear'),
+('solicitudes.ver_propias'),
+('solicitudes.ver_todas'),
+('solicitudes.aprobar'),
+('solicitudes.rechazar'),
+('solicitudes.cancelar'),
+
+-- Reportes
 ('reportes.ver');
 
 INSERT INTO permisos (clave) VALUES
@@ -22,8 +48,44 @@ INSERT INTO permisos (clave) VALUES
 
 -- 3. ROL_PERMISO (Asignando permisos a roles)
 -- Administrador (tiene todos los permisos 1 al 8)
-INSERT INTO rol_permiso (rol_id, permiso_id) VALUES 
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8);
+-- Admin
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Administrador';;
+
+-- Operador
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Operador de Préstamos'
+AND p.clave IN (
+    'equipos.ver',
+    'prestamos.ver',
+    'prestamos.crear',
+    'prestamos.devolver',
+    'solicitudes.crear',
+    'solicitudes.ver_propias',
+    'solicitudes.ver_todas',
+    'solicitudes.aprobar',
+    'solicitudes.rechazar',
+    'solicitudes.cancelar'
+);
+
+-- usuario
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.id_rol, p.id_permiso
+FROM rol r
+CROSS JOIN permisos p
+WHERE r.nombre_rol = 'Usuario Estándar'
+AND p.clave IN (
+    'equipos.ver',
+    'solicitudes.crear',
+    'solicitudes.ver_propias',
+    'solicitudes.cancelar'
+);
 
 -- Operador (solo gestiona equipos y préstamos)
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES 

@@ -16,7 +16,7 @@ CREATE TABLE categorias (
     categoria_id     INT PRIMARY KEY AUTO_INCREMENT,
     categoria_nombre VARCHAR(50) NOT NULL,
     dias_max_prestamo INT NOT NULL DEFAULT 7,
-    eliminado_en TIMESTAMP NULL DEFAULT NULL;
+    eliminado_en TIMESTAMP NULL DEFAULT NULL
 );
 
 CREATE TABLE usuarios (
@@ -28,6 +28,7 @@ CREATE TABLE usuarios (
     nom_usuario     VARCHAR(50) NOT NULL UNIQUE,
     password_hash   VARCHAR(255) NOT NULL,
     intento_ingreso INT NOT NULL DEFAULT 3,
+    bloqueado_hasta DATETIME NULL DEFAULT NULL,
     desactivado_en  TIMESTAMP NULL DEFAULT NULL, /*para saber cuando se desactivó*/
     activo          BOOLEAN AS (desactivado_en IS NULL) VIRTUAL,
     CONSTRAINT fk_usuarios_rol
