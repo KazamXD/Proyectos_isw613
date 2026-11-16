@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 
+// Solo usuarios autorizados pueden consultar reportes
 requerirPermiso($conn, 'equipos.ver');
 $tokenCSRF = generarTokenCSRF();
 $puedeEliminar = tienePermiso($conn, 'equipos.eliminar');
@@ -90,14 +91,6 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
 
     <h1>Equipos registrados</h1>
-
-    <?php if (tienePermiso($conn, 'equipos.ver')): ?>
-        <p>
-            <a href="../actions/export_equipment.php">
-                Exportar equipos a CSV
-            </a>
-        </p>
-    <?php endif; ?>
 
     <?php if (($_GET['success'] ?? '') === 'creado'): ?>
         <p style="color: green;">
@@ -229,15 +222,15 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </p>
     <?php endif; ?>
 
-    <p>
-        <a href="dashboard.php">Volver al dashboard</a>
-    </p>    
-
     <?php if (tienePermiso($conn, 'equipos.crear')): ?>
         <p>
             <a href="equipment_form.php">Registrar nuevo equipo</a>
         </p>
     <?php endif; ?>
+
+    <p>
+        <a href="dashboard.php">Volver al dashboard</a>
+    </p>    
 
 </body>
 </html>

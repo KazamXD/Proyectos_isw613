@@ -105,5 +105,14 @@ $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
         </p>
     <?php endif; ?>
 
+    <!-- Ver reportes de inventario -->
+    <?php if (tienePermiso($conn, 'reportes.ver')): ?>
+        <p>
+            <a href="report_equipment.php">
+                Ver reporte de inventario
+            </a>
+        </p>
+    <?php endif; ?>
+
 </body>
 </html>

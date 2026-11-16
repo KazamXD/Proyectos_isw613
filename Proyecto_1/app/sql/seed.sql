@@ -369,7 +369,6 @@ ORDER BY s.id_solicitud DESC;
 SELECT * FROM solicitud_detalle
 join equipos e on equipo_id = e.id_equipo
 
-
 SELECT
     id_solicitud,
     usuario_id,
@@ -381,10 +380,9 @@ SELECT
 FROM solicitudes
 ORDER BY id_solicitud DESC;
 
-
-
-
-
+SELECT id_permiso, clave
+FROM permisos
+WHERE clave LIKE 'reportes.%';
 
 
 
