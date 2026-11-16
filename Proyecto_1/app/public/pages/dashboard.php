@@ -1,127 +1,191 @@
-
 <?php
-// dashboard.php
 
 require_once __DIR__ . '/../../includes/auth.php';
-
-// Exigir que el usuario haya iniciado sesión
-requerirLogin();
-
-// Conexión a la base de datos
 require_once __DIR__ . '/../../config/connection.php';
 
-// Consultar permisos del rol del usuario
+// Verificar autenticación
+requerirLogin();
+
+// Verificar que el usuario siga activo
+verificarUsuarioActivo($conn);
+
+// Consultar permisos del usuario
 $stmt = $conn->prepare("
     SELECT p.clave
     FROM rol_permiso rp
-    JOIN permisos p ON rp.permiso_id = p.id_permiso
-    WHERE rp.rol_id = ?
+    INNER JOIN permisos p
+        ON rp.permiso_id = p.id_permiso
+    WHERE rp.rol_id = :rol_id
+    ORDER BY p.clave ASC
 ");
 
-$stmt->execute([$_SESSION['rol_id']]);
+$stmt->execute([
+    'rol_id' => $_SESSION['rol_id']
+]);
 
 $permisos = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-//Consultar permisos
+// Permisos para accesos rápidos
 $puedeCrearUsuarios = tienePermiso($conn, 'usuarios.crear');
 $puedeCrearEquipos = tienePermiso($conn, 'equipos.crear');
+$puedeCrearPrestamos = tienePermiso($conn, 'prestamos.crear');
+$puedeCrearSolicitudes = tienePermiso($conn, 'solicitudes.crear');
+
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-</head>
-<body>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <h1>
-        Bienvenido,
-        <?php echo htmlspecialchars($_SESSION['nombre_usuario']); ?>!
-    </h1>
+<div class="d-flex">
 
-    <p>Has iniciado sesión correctamente.</p>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-    <h3>Tus permisos actuales:</h3>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-    <ul>
-        <?php foreach ($permisos as $permiso): ?>
-            <li>
-                <?php echo htmlspecialchars($permiso); ?>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+        <!-- Encabezado -->
+        <div class="mb-4">
+            <h1 class="fw-bold">
+                Dashboard
+            </h1>
+            <p class="text-muted">
+                Panel de administración de SIGEL
+            </p>
+        </div>
 
-    <h3>Prueba de permisos</h3>
+        <!-- Bienvenida -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h3 class="card-title">
+                    Bienvenido,
+                    <?= htmlspecialchars(
+                        $_SESSION['nombre_usuario'],
+                        ENT_QUOTES | ENT_SUBSTITUTE,
+                        'UTF-8'
+                    ) ?>!
+                </h3>
+                <p class="card-text text-muted">
+                    Has iniciado sesión correctamente.
+                    Selecciona una opción para comenzar.
+                </p>
+            </div>
+        </div>
 
-        <?php if ($puedeCrearUsuarios): ?>
-            <p>Puedes administrar usuarios.</p>
-        <?php endif; ?>
+        <!-- Accesos rápidos -->
+        <h4 class="mb-3">
+            Accesos rápidos
+        </h4>
 
-        <?php if ($puedeCrearEquipos): ?>
-            <p>Puedes registrar equipos.</p>
-        <?php endif; ?>
+        <div class="row g-3 mb-4">
+            <?php if ($puedeCrearUsuarios): ?>
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Usuarios
+                            </h5>
+                            <p class="card-text">
+                                Registrar nuevos usuarios en el sistema.
+                            </p>
+                            <a
+                                href="user_form.php"
+                                class="btn btn-primary"
+                            >
+                                Crear usuario
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <?php if ($puedeCrearEquipos): ?>
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Equipos
+                            </h5>
+                            <p class="card-text">
+                                Registrar nuevos equipos de cómputo.
+                            </p>
+                            <a
+                                href="equipment_form.php"
+                                class="btn btn-success"
+                            >
+                                Crear equipo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
-    <a href="../actions/logout.php">Cerrar sesión</a>
+            <?php if ($puedeCrearPrestamos): ?>
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Préstamos
+                            </h5>
+                            <p class="card-text">
+                                Registrar un nuevo préstamo.
+                            </p>
+                            <a
+                                href="loan_form.php"
+                                class="btn btn-warning"
+                            >
+                                Nuevo préstamo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
-    <!-- Ver usuarios -->
-    <?php if (tienePermiso($conn, 'usuarios.ver')): ?>
-        <a href="users.php">Gestionar usuarios</a>
-    <?php endif; ?>
+            <?php if ($puedeCrearSolicitudes): ?>
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Solicitudes
+                            </h5>
+                            <p class="card-text">
+                                Solicitar equipos para una fecha determinada.
+                            </p>
+                            <a
+                                href="request_form.php"
+                                class="btn btn-info"
+                            >
+                                Nueva solicitud
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
 
-    <!-- Ver equipos -->
-    <?php if (tienePermiso($conn, 'equipos.ver')): ?>
-        <a href="equipment.php">Consultar equipos</a>
-    <?php endif; ?>
+        <!-- Permisos del usuario -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Permisos de tu cuenta
+                </h5>
+            </div>
+            <div class="card-body">
+                <?php foreach ($permisos as $permiso): ?>
+                    <span class="badge bg-secondary me-1 mb-2">
+                        <?= htmlspecialchars(
+                            $permiso,
+                            ENT_QUOTES | ENT_SUBSTITUTE,
+                            'UTF-8'
+                        ) ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </main>
+</div>
 
-    <!-- Ver préstamos -->
-    <?php if (tienePermiso($conn, 'prestamos.ver')): ?>
-        <a href="loans.php">Consultar préstamos</a>
-    <?php endif; ?>
-
-    <!-- Ver categorías -->
-    <?php if (tienePermiso($conn, 'categorias.ver')): ?>
-        <a href="categories.php">Gestionar categorías</a>
-    <?php endif; ?>
-
-    <!-- Ver solicitudes de préstamos -->
-     <?php if (tienePermiso($conn, 'solicitudes.crear')): ?>
-        <p>
-            <a href="request_form.php">
-                Solicitar equipos
-            </a>
-        </p>
-    <?php endif; ?>
-
-    <!-- Ver solicitudes de préstamos -->
-     <?php if (
-        tienePermiso($conn, 'solicitudes.ver_todas') ||
-        tienePermiso($conn, 'solicitudes.ver_propias')
-        ): ?>
-        <p>
-            <a href="requests.php">
-                Ver solicitudes
-            </a>
-        </p>
-    <?php endif; ?>
-
-    <!-- Ver reportes de inventario -->
-    <?php if (tienePermiso($conn, 'reportes.ver')): ?>
-        <p>
-            <a href="report_equipment.php">
-                Ver reporte de inventario
-            </a>
-        </p>
-    <?php endif; ?>
-
-    <!-- Ver reportes de préstamos retrasados -->
-    <?php if (tienePermiso($conn, 'reportes.ver')): ?>
-        <p>
-            <a href="reports.php">
-                Consultar reportes
-            </a>
-        </p>
-    <?php endif; ?>
-
-</body>
-</html>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

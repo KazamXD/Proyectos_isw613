@@ -26,131 +26,163 @@ $puedeCrear = tienePermiso($conn, 'categorias.crear');
 $puedeEditar = tienePermiso($conn, 'categorias.editar');
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Categorías</title>
-</head>
-<body>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <h1>Gestión de categorías</h1>
+    <div class="d-flex">
+    <!-- Menú lateral -->
+        <aside
+            class="bg-dark text-white"
+            style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+        >
+            <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+        </aside>
 
-    <?php if (tienePermiso($conn, 'categorias.ver')): ?>
-        <p>
-            <a href="../actions/export_categories.php">
-                Exportar categorías a CSV
-            </a>
-        </p>
-    <?php endif; ?>
 
-    <!-- Mensajes de error o exito -->
-    <?php if (($_GET['success'] ?? '') === 'creado'): ?>
-        <p style="color: green;">
-            Categoría registrada correctamente.
-        </p>
-    <?php endif; ?>
+        <main class="flex-grow-1 p-4">
 
-    <?php if (($_GET['success'] ?? '') === 'editado'): ?>
-        <p style="color: green;">
-            Categoría actualizada correctamente.
-        </p>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="fw-bold mb-1">
+                        Gestión de Categorías
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Administración de categorías y días máximos de préstamo.
+                    </p>
+                </div>
 
-    <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
-        <p>No se realizaron cambios.</p>
-    <?php endif; ?>
+                <?php if ($puedeCrear): ?>
+                    <a
+                        href="category_form.php"
+                        class="btn btn-primary"
+                    >
+                        + Nueva categoría
+                    </a>
+                <?php endif; ?>
+            </div>
 
-    <?php if (($_GET['success'] ?? '') === 'eliminado'): ?>
-        <p style="color: green;">
-            Categoría eliminada correctamente.
-        </p>
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        Categorías registradas
+                    </h5>
+                </div>
+                <div class="card-body">
 
-    <?php elseif (($_GET['error'] ?? '') === 'asociada'): ?>
-        <p style="color: red;">
-            No se puede eliminar la categoría porque tiene equipos asociados
-            o ya no está disponible.
-        </p>
+                <!-- Mensajes de error o exito -->
+                <?php if (($_GET['success'] ?? '') === 'creado'): ?>
+                    <div class="alert alert-success">
+                        Categoría registrada correctamente.
+                    </div>
+                <?php endif; ?>
 
-    <?php elseif (($_GET['error'] ?? '') === 'sistema'): ?>
-        <p style="color: red;">
-            No se pudo eliminar la categoría.
-        </p>
-    <?php endif; ?>
+                <?php if (($_GET['success'] ?? '') === 'editado'): ?>
+                    <p style="color: green;">
+                        Categoría actualizada correctamente.
+                    </p>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Categoría</th>
-                <th>Días máximos</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+                <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
+                    <p>No se realizaron cambios.</p>
+                <?php endif; ?>
 
-        <tbody>
-            <?php foreach ($categorias as $categoria): ?>
-                <tr>
-                    <td><?= (int)$categoria['categoria_id'] ?></td>
+                <?php if (($_GET['success'] ?? '') === 'eliminado'): ?>
+                    <p style="color: green;">
+                        Categoría eliminada correctamente.
+                    </p>
 
-                    <td>
-                        <?= htmlspecialchars(
-                            $categoria['categoria_nombre'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
+                <?php elseif (($_GET['error'] ?? '') === 'asociada'): ?>
+                    <p style="color: red;">
+                        No se puede eliminar la categoría porque tiene equipos asociados
+                        o ya no está disponible.
+                    </p>
 
-                    <td><?= (int)$categoria['dias_max_prestamo'] ?></td>
+                <?php elseif (($_GET['error'] ?? '') === 'sistema'): ?>
+                    <p style="color: red;">
+                        No se pudo eliminar la categoría.
+                    </p>
+                <?php endif; ?>
 
-                    <td>
-                        <?php if ($puedeEditar): ?>
-                            <a href="edit_category.php?id=<?= (int)$categoria['categoria_id'] ?>">
-                                Editar
-                            </a>
-                        <?php endif; ?> 
-                        <?php if ($puedeEliminar): ?>
-                            <form
-                                action="../actions/delete_category.php"
-                                method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');"
-                            >
-                                <input
-                                    type="hidden"
-                                    name="csrf_token"
-                                    value="<?= htmlspecialchars(
-                                        $tokenCSRF,
-                                        ENT_QUOTES | ENT_SUBSTITUTE,
-                                        'UTF-8'
-                                    ) ?>"
-                                >
-                                <input
-                                    type="hidden"
-                                    name="categoria_id"
-                                    value="<?= (int)$categoria['categoria_id'] ?>"
-                                >
-                                <button type="submit">Eliminar</button>
-                            </form>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+                <div class="table-responsive">
 
-    <?php if (empty($categorias)): ?>
-        <p>No hay categorías registradas.</p>
-    <?php endif; ?>
+                    <table class="table table-striped table-hover align-middle">
 
-    <?php if ($puedeCrear): ?>
-        <p>
-            <a href="category_form.php">Registrar categoría</a>
-        </p>
-    <?php endif; ?>
+                        <thead class="table-dark">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Categoría</th>
+                                <th>Días máximos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
 
-    <p>
-        <a href="dashboard.php">Volver al dashboard</a>
-    </p>
+                        <tbody>
+                            <?php foreach ($categorias as $categoria): ?>
+                                <tr>
+                                    <td><?= (int)$categoria['categoria_id'] ?></td>
 
-</body>
-</html>
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $categoria['categoria_nombre'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <td><?= (int)$categoria['dias_max_prestamo'] ?></td>
+
+                                    <td>
+                                        <?php if ($puedeEditar): ?>
+                                            <a
+                                                href="edit_category.php?id=<?= (int)$categoria['categoria_id'] ?>"
+                                                class="btn btn-warning btn-sm"
+                                            >
+                                                Editar
+                                            </a>
+                                        <?php endif; ?>
+
+                                        <?php if ($puedeEliminar): ?>
+                                            <form
+                                                action="../actions/delete_category.php"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= htmlspecialchars(
+                                                        $tokenCSRF,
+                                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                                        'UTF-8'
+                                                    ) ?>"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    name="categoria_id"
+                                                    value="<?= (int)$categoria['categoria_id'] ?>"
+                                                >
+                                                <button type="submit" class="btn btn-danger btn-sm"> Eliminar </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <?php if (empty($categorias)): ?>
+                        <p>No hay categorías registradas.</p>
+                    <?php endif; ?>
+
+                </div>
+                <?php if (tienePermiso($conn, 'categorias.ver')): ?>
+                    <div>
+                        <a href="../actions/export_categories.php" class= "btn btn-success">
+                            Exportar categorías a CSV
+                        </a>
+                </div>
+                <?php endif; ?>
+            </div>
+        </main>
+    </div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

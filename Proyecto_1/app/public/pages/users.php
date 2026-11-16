@@ -12,7 +12,12 @@ $tokenCSRF = generarTokenCSRF();
 $puedeEliminar = tienePermiso($conn, 'usuarios.eliminar');
 
 // Obtener búsqueda y paginación
-$busqueda = trim($_GET['buscar'] ?? '');
+$busqueda = $_GET['buscar'] ?? '';
+if (!is_string($busqueda)) {
+    $busqueda = '';
+}
+
+$busqueda = trim($busqueda);
 $porPagina = (int) ($_GET['cantidad'] ?? 10);
 $pagina = max(1, (int) ($_GET['pagina'] ?? 1));
 
@@ -72,170 +77,286 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Usuarios</title>
-</head>
-<body>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <h1>Gestión de Usuarios</h1>
+<div class="d-flex">
 
-    <?php if (tienePermiso($conn, 'usuarios.ver')): ?>
-        <p>
-            <a href="../actions/export_users.php">
-                Exportar usuarios a CSV
-            </a>
-        </p>
-    <?php endif; ?>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Gestión de Usuarios
+                </h1>
+                <p class="text-muted mb-0">
+                    Administración de usuarios registrados en SIGEL.
+                </p>
+            </div>
 
-    <!-- Mensajes de error o éxito -->
-    <?php if (($_GET['success'] ?? '') === 'creado'): ?>
-        <p>Usuario registrado correctamente.</p>
-    <?php endif; ?>
+            <?php if (tienePermiso($conn, 'usuarios.crear')): ?>
+                <a
+                    href="user_form.php"
+                    class="btn btn-primary"
+                >
+                    + Nuevo usuario
+                </a>
+            <?php endif; ?>
+        </div>
 
-    <?php if (($_GET['success'] ?? '') === 'editado'): ?>
-        <p style="color: green;">
-            Usuario actualizado correctamente.
-        </p>
-    <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
-        <p>No se realizaron cambios.</p>
-    <?php endif; ?>
+        <!-- Mensajes -->
+        <?php if (($_GET['success'] ?? '') === 'creado'): ?>
 
-    <?php
-    $mensajes = [
-        'eliminado' => 'Usuario desactivado correctamente.',
-        'propio' => 'No puedes desactivar tu propia cuenta.',
-        'prestamos' => 'El usuario tiene préstamos pendientes de devolución.',
-        'no_disponible' => 'El usuario no existe o ya fue desactivado.',
-        'sistema' => 'No se pudo desactivar el usuario.'
-    ];
+            <div class="alert alert-success">
+                Usuario registrado correctamente.
+            </div>
 
-    $success = $_GET['success'] ?? '';
-    $error = $_GET['error'] ?? '';
-
-    if ($success === 'eliminado'): ?>
-        <p style="color: green;">
-            <?= htmlspecialchars($mensajes['eliminado'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-        </p>
-    <?php elseif (is_string($error) && isset($mensajes[$error])): ?>
-        <p style="color: red;">
-            <?= htmlspecialchars($mensajes[$error], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-        </p>
-    <?php endif; ?>
-
-    <form method="GET">
-        <input
-            type="text"
-            name="buscar"
-            placeholder="Buscar usuario..."
-            value="<?= htmlspecialchars($busqueda) ?>"
-        >
-
-        <select name="cantidad">
-            <?php foreach ([5, 10, 20, 50] as $cantidad): ?>
-                <option value="<?= $cantidad ?>"
-                    <?= $porPagina === $cantidad ? 'selected' : '' ?>>
-                    <?= $cantidad ?> registros
-                </option>
-            <?php endforeach; ?>
-        </select>
-
-        <button type="submit">Buscar</button>
-    </form>
-
-    <hr>
-
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Usuario</th>
-                <th>ID Rol</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($usuarios as $usuario): ?>
-                <tr>
-                    <td><?= (int) $usuario['id'] ?></td>
-                    <td><?= htmlspecialchars($usuario['nombre']) ?></td>
-                    <td><?= htmlspecialchars($usuario['nom_usuario']) ?></td>
-                    <td><?= (int) $usuario['rol_id'] ?></td>
-
-                    <td>
-                        <?php if (tienePermiso($conn, 'usuarios.editar')): ?>
-                            <a href="edit_user.php?id=<?= (int)$usuario['id'] ?>">
-                                Editar
-                            </a>
-                        <?php endif; ?>
-                        <?php if (
-                            $puedeEliminar &&
-                            (int)$usuario['id'] !== (int)$_SESSION['usuario_id']
-                        ): ?>
-                            <form
-                                action="../actions/delete_user.php"
-                                method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('¿Seguro que deseas desactivar este usuario?');"
-                            >
-                                <input
-                                    type="hidden"
-                                    name="csrf_token"
-                                    value="<?= htmlspecialchars(
-                                        $tokenCSRF,
-                                        ENT_QUOTES | ENT_SUBSTITUTE,
-                                        'UTF-8'
-                                    ) ?>"
-                                >
-                                <input
-                                    type="hidden"
-                                    name="usuario_id"
-                                    value="<?= (int)$usuario['id'] ?>"
-                                >
-                                <button type="submit">
-                                    Eliminar
-                                </button>
-                            </form>
-
-                        <?php endif; ?>
-                    </td>
-
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <p>
-        Página <?= $pagina ?> de <?= $totalPaginas ?>
-        (<?= $totalRegistros ?> registros)
-    </p>
-
-    <?php if ($pagina > 1): ?>
-        <a href="?<?= http_build_query([
-            'buscar' => $busqueda,
-            'cantidad' => $porPagina,
-            'pagina' => $pagina - 1
-        ]) ?>">Anterior</a>
-    <?php endif; ?>
-
-    <?php if ($pagina < $totalPaginas): ?>
-        <a href="?<?= http_build_query([
-            'buscar' => $busqueda,
-            'cantidad' => $porPagina,
-            'pagina' => $pagina + 1
-        ]) ?>">Siguiente</a>
-    <?php endif; ?>
-
-    <p><a href="dashboard.php">Volver al dashboard</a></p>
-
-        <?php if (tienePermiso($conn, 'usuarios.crear')): ?>
-            <p>
-                <a href="user_form.php">Crear nuevo usuario</a>
-            </p>
         <?php endif; ?>
 
-</body>
-</html>
+        <?php if (($_GET['success'] ?? '') === 'editado'): ?>
+
+            <div class="alert alert-success">
+                Usuario actualizado correctamente.
+            </div>
+
+        <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
+
+            <div class="alert alert-info">
+                No se realizaron cambios.
+            </div>
+
+        <?php endif; ?>
+
+        <?php
+        $mensajes = [
+            'eliminado' => 'Usuario desactivado correctamente.',
+            'propio' => 'No puedes desactivar tu propia cuenta.',
+            'prestamos' => 'El usuario tiene préstamos pendientes de devolución.',
+            'no_disponible' => 'El usuario no existe o ya fue desactivado.',
+            'sistema' => 'No se pudo desactivar el usuario.'
+        ];
+        $success = $_GET['success'] ?? '';
+        $error = $_GET['error'] ?? '';
+        ?>
+
+        <?php if ($success === 'eliminado'): ?>
+            <div class="alert alert-success">
+                <?= htmlspecialchars(
+                    $mensajes['eliminado'],
+                    ENT_QUOTES | ENT_SUBSTITUTE,
+                    'UTF-8'
+                ) ?>
+            </div>
+        <?php elseif (is_string($error) && isset($mensajes[$error])): ?>
+            <div class="alert alert-danger">
+                <?= htmlspecialchars(
+                    $mensajes[$error],
+                    ENT_QUOTES | ENT_SUBSTITUTE,
+                    'UTF-8'
+                ) ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Tarjeta principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+
+                <h5 class="mb-0">
+                    Usuarios registrados
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                <!-- Filtros -->
+                <form method="GET" class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="buscar" class="form-label">
+                            Buscar usuario
+                        </label>
+                        <input
+                            type="text"
+                            id="buscar"
+                            name="buscar"
+                            class="form-control"
+                            placeholder="Nombre, apellido, usuario o correo"
+                            value="<?= htmlspecialchars(
+                                $busqueda,
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?>"
+                        >
+                    </div>
+                    <div class="col-md-3">
+                        <label for="cantidad" class="form-label">
+                            Registros por página
+                        </label>
+                        <select
+                            name="cantidad"
+                            id="cantidad"
+                            class="form-select"
+                        >
+                            <?php foreach ([5, 10, 20, 50] as $cantidad): ?>
+                                <option
+                                    value="<?= $cantidad ?>"
+                                    <?= $porPagina === $cantidad ? 'selected' : '' ?>
+                                >
+                                    <?= $cantidad ?> registros
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Buscar
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Usuario</th>
+                                <th>ID Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            <?php foreach ($usuarios as $usuario): ?>
+                                <tr>
+                                    <td>
+                                        <?= (int) $usuario['id'] ?>
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $usuario['nombre'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $usuario['nom_usuario'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <?= (int) $usuario['rol_id'] ?>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <?php if (tienePermiso($conn, 'usuarios.editar')): ?>
+                                            <a
+                                                href="edit_user.php?id=<?= (int) $usuario['id'] ?>"
+                                                class="btn btn-warning btn-sm"
+                                            >
+                                                Editar
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if (
+                                            $puedeEliminar &&
+                                            (int) $usuario['id'] !== (int) $_SESSION['usuario_id']
+                                        ): ?>
+                                            <form
+                                                action="../actions/delete_user.php"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Seguro que deseas desactivar este usuario?');"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= htmlspecialchars(
+                                                        $tokenCSRF,
+                                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                                        'UTF-8'
+                                                    ) ?>"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    name="usuario_id"
+                                                    value="<?= (int) $usuario['id'] ?>"
+                                                >
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php if (empty($usuarios)): ?>
+                    <div class="alert alert-info">
+                        No se encontraron usuarios.
+                    </div>
+                <?php endif; ?>
+
+                <!-- Paginación -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <p class="text-muted mb-0">
+                        Página <?= $pagina ?> de <?= $totalPaginas ?>
+                        (<?= $totalRegistros ?> registros)
+                    </p>
+
+                    <div>
+                        <?php if ($pagina > 1): ?>
+                            <a
+                                class="btn btn-outline-primary btn-sm"
+                                href="?<?= http_build_query([
+                                    'buscar' => $busqueda,
+                                    'cantidad' => $porPagina,
+                                    'pagina' => $pagina - 1
+                                ]) ?>"
+                            >
+                                Anterior
+                            </a>
+                        <?php endif; ?>
+
+                        <?php if ($pagina < $totalPaginas): ?>
+                            <a
+                                class="btn btn-outline-primary btn-sm"
+                                href="?<?= http_build_query([
+                                    'buscar' => $busqueda,
+                                    'cantidad' => $porPagina,
+                                    'pagina' => $pagina + 1
+                                ]) ?>"
+                            >
+                                Siguiente
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

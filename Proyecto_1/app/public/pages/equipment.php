@@ -82,155 +82,272 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Consulta de Equipos</title>
-</head>
-<body>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <h1>Equipos registrados</h1>
+<div class="d-flex">
 
-    <?php if (($_GET['success'] ?? '') === 'creado'): ?>
-        <p style="color: green;">
-            Equipo registrado correctamente.
-        </p>
-    <?php endif; ?>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-    <?php if (($_GET['success'] ?? '') === 'editado'): ?>
-        <p>Equipo actualizado correctamente.</p>
-    <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
-        <p>No se realizaron cambios.</p>
-    <?php endif; ?>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-    <form method="GET" action="equipment.php">
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Gestión de Equipos
+                </h1>
+                <p class="text-muted mb-0">
+                    Consulta y administración de los equipos registrados en SIGEL.
+                </p>
+            </div>
 
-        <label for="buscar">Buscar equipo:</label>
-        <input
-            type="text"
-            id="buscar"
-            name="buscar"
-            placeholder="Código, categoría o estado"
-            value="<?= htmlspecialchars(
-                $busqueda,
-                ENT_QUOTES | ENT_SUBSTITUTE,
-                'UTF-8'
-            ) ?>"
-        >
+            <?php if (tienePermiso($conn, 'equipos.crear')): ?>
+                <a
+                    href="equipment_form.php"
+                    class="btn btn-success"
+                >
+                    + Nuevo equipo
+                </a>
+            <?php endif; ?>
+        </div>
 
-        <label for="orden">Ordenar equipos por:</label>
-        <select name="orden" id="orden">
-            <option value="categoria" <?= $orden === 'categoria' ? 'selected' : '' ?>>
-                Categoría (A-Z)
-            </option>
-            <option value="id_asc" <?= $orden === 'id_asc' ? 'selected' : '' ?>>
-                ID (ascendente)
-            </option>
-            <option value="id_desc" <?= $orden === 'id_desc' ? 'selected' : '' ?>>
-                ID (descendente)
-            </option>
-            <option value="codigo_asc" <?= $orden === 'codigo_asc' ? 'selected' : '' ?>>
-                Código (A-Z)
-            </option>
-            <option value="codigo_desc" <?= $orden === 'codigo_desc' ? 'selected' : '' ?>>
-                Código (Z-A)
-            </option>
-            <option value="estado" <?= $orden === 'estado' ? 'selected' : '' ?>>
-                Estado
-            </option>
-        </select>
-        <button type="submit">Filtrar</button>
-    </form>
+        <!-- Mensajes -->
+        <?php if (($_GET['success'] ?? '') === 'creado'): ?>
+            <div class="alert alert-success">
+                Equipo registrado correctamente.
+            </div>
+        <?php endif; ?>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Código</th>
-                <th>Categoría</th>
-                <th>Estado</th>
-                <th>Imagen</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+        <?php if (($_GET['success'] ?? '') === 'editado'): ?>
+            <div class="alert alert-success">
+                Equipo actualizado correctamente.
+            </div>
+        <?php elseif (($_GET['success'] ?? '') === 'sin_cambios'): ?>
+            <div class="alert alert-info">
+                No se realizaron cambios.
+            </div>
+        <?php endif; ?>
 
-        <tbody>
-            <?php foreach ($equipos as $equipo): ?>
-                <tr>
-                    <td><?= (int)$equipo['id_equipo'] ?></td>
-                    <td><?= htmlspecialchars($equipo['codigo'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8') ?></td>
-                    <td><?= htmlspecialchars($equipo['categoria_nombre'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8') ?></td>
-                    <td><?= htmlspecialchars($equipo['nombre_estado'],ENT_QUOTES | ENT_SUBSTITUTE,'UTF-8'   ) ?></td>
+        <?php if (($_GET['success'] ?? '') === 'eliminado'): ?>
+            <div class="alert alert-success">
+                Equipo eliminado correctamente.
+            </div>
+        <?php endif; ?>
 
-                    <td>
-                        <?php if (!empty($equipo['ruta_imagen'])): ?>
-                            <img
-                                src="../uploads/equipment/<?= rawurlencode($equipo['ruta_imagen']) ?>"
-                                alt="Imagen del equipo"
-                                width="90"
-                            >
-                        <?php else: ?>
-                            Sin imagen
-                        <?php endif; ?>
-                    </td>
+        <!-- Tarjeta principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Equipos registrados
+                </h5>
+            </div>
+            <div class="card-body">
 
-                    <td>
-                        <?php if (tienePermiso($conn, 'equipos.editar')): ?>
-                            <a href="edit_equipment.php?id=<?= (int)$equipo['id_equipo'] ?>">
-                                Editar
-                            </a>
-                        <?php endif; ?>
+                <!-- Filtros -->
+                <form
+                    method="GET"
+                    action="equipment.php"
+                    class="row g-3 mb-4"
+                >
+                    <!-- Búsqueda -->
+                    <div class="col-md-6">
+                        <label for="buscar" class="form-label">
+                            Buscar equipo
+                        </label>
+                        <input
+                            type="text"
+                            id="buscar"
+                            name="buscar"
+                            class="form-control"
+                            placeholder="Código, categoría o estado"
+                            value="<?= htmlspecialchars(
+                                $busqueda,
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?>"
+                        >
+                    </div>
 
-                        <?php if ($puedeEliminar): ?>
-                            <form
-                                action="../actions/delete_equipment.php"
-                                method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?');"
-                            >
-                                <input
-                                    type="hidden"
-                                    name="csrf_token"
-                                    value="<?= htmlspecialchars(
-                                        $tokenCSRF,
-                                        ENT_QUOTES | ENT_SUBSTITUTE,
-                                        'UTF-8'
-                                    ) ?>"
-                                >
-                                <input
-                                    type="hidden"
-                                    name="equipo_id"
-                                    value="<?= (int)$equipo['id_equipo'] ?>"
-                                >
-                                <button type="submit">Eliminar</button>
-                            </form>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+                    <!-- Ordenamiento -->
+                    <div class="col-md-4">
+                        <label for="orden" class="form-label">
+                            Ordenar equipos por
+                        </label>
+                        <select
+                            name="orden"
+                            id="orden"
+                            class="form-select"
+                        >
+                            <option value="categoria"
+                                <?= $orden === 'categoria' ? 'selected' : '' ?>>
+                                Categoría (A-Z)
+                            </option>
+                            <option value="id_asc"
+                                <?= $orden === 'id_asc' ? 'selected' : '' ?>>
+                                ID (ascendente)
+                            </option>
+                            <option value="id_desc"
+                                <?= $orden === 'id_desc' ? 'selected' : '' ?>>
+                                ID (descendente)
+                            </option>
+                            <option value="codigo_asc"
+                                <?= $orden === 'codigo_asc' ? 'selected' : '' ?>>
+                                Código (A-Z)
+                            </option>
+                            <option value="codigo_desc"
+                                <?= $orden === 'codigo_desc' ? 'selected' : '' ?>>
+                                Código (Z-A)
+                            </option>
+                            <option value="estado"
+                                <?= $orden === 'estado' ? 'selected' : '' ?>>
+                                Estado
+                            </option>
+                        </select>
+                    </div>
 
-    <?php if (empty($equipos)): ?>
-        <p>No se encontraron equipos con esos criterios.</p>
-    <?php endif; ?>
+                    <!-- Botón filtrar -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Filtrar
+                        </button>
+                    </div>
+                </form>
 
-    <?php if (($_GET['success'] ?? '') === 'eliminado'): ?>
-        <p style="color: green;">
-            Equipo eliminado correctamente.
-        </p>
-    <?php endif; ?>
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Código</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
 
-    <?php if (tienePermiso($conn, 'equipos.crear')): ?>
-        <p>
-            <a href="equipment_form.php">Registrar nuevo equipo</a>
-        </p>
-    <?php endif; ?>
+                        <tbody>
+                            <?php foreach ($equipos as $equipo): ?>
+                                <tr>
+                                    <td>
+                                        <?= (int) $equipo['id_equipo'] ?>
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $equipo['codigo'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $equipo['categoria_nombre'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
 
-    <p>
-        <a href="dashboard.php">Volver al dashboard</a>
-    </p>    
+                                    <!-- Estado -->
+                                    <td>
+                                        <?php
+                                        $estado = $equipo['nombre_estado'];
+                                        $claseEstado = match ($estado) {
+                                            'Disponible' => 'bg-success',
+                                            'Prestado' => 'bg-warning text-dark',
+                                            'Mantenimiento' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                        ?>
+                                        <span class="badge <?= $claseEstado ?>">
+                                            <?= htmlspecialchars(
+                                                $estado,
+                                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                                'UTF-8'
+                                            ) ?>
+                                        </span>
+                                    </td>
 
-</body>
-</html>
+                                    <!-- Imagen -->
+                                    <td>
+                                        <?php if (!empty($equipo['ruta_imagen'])): ?>
+                                            <img
+                                                src="../uploads/equipment/<?= rawurlencode($equipo['ruta_imagen']) ?>"
+                                                alt="Imagen del equipo"
+                                                class="img-thumbnail"
+                                                style="width: 90px; height: 70px; object-fit: cover;"
+                                            >
+                                        <?php else: ?>
+                                            <span class="text-muted">
+                                                Sin imagen
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <!-- Acciones -->
+                                    <td>
+                                        <?php if (tienePermiso($conn, 'equipos.editar')): ?>
+
+                                            <a
+                                                href="edit_equipment.php?id=<?= (int)$equipo['id_equipo'] ?>"
+                                                class="btn btn-warning btn-sm"
+                                            >
+                                                Editar
+                                            </a>
+
+                                        <?php endif; ?>
+                                        <?php if ($puedeEliminar): ?>
+                                            <form
+                                                action="../actions/delete_equipment.php"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?');"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= htmlspecialchars(
+                                                        $tokenCSRF,
+                                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                                        'UTF-8'
+                                                    ) ?>"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    name="equipo_id"
+                                                    value="<?= (int)$equipo['id_equipo'] ?>"
+                                                >
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php if (empty($equipos)): ?>
+                    <div class="alert alert-info">
+                        No se encontraron equipos con esos criterios.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </main>
+</div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
