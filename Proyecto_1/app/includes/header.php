@@ -1,3 +1,10 @@
+<!-- Rutas para que no se rompa con windows -->
+<?php
+$rutaAssets = str_contains($_SERVER['SCRIPT_NAME'], '/pages/')
+    ? '../assets'
+    : 'assets';
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -14,13 +21,13 @@
     <!-- Bootstrap -->
     <link
         rel="stylesheet"
-        href="/Proyecto_1/app/public/assets/css/bootstrap.min.css"
+        href="<?= $rutaAssets ?>/css/bootstrap.min.css"
     >
 
     <!-- Estilos personalizados -->
     <link
         rel="stylesheet"
-        href="/Proyecto_1/app/public/assets/css/custom.css"
+        href="<?= $rutaAssets ?>/css/custom.css"
     >
 
 </head>

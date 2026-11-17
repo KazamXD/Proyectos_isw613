@@ -144,7 +144,7 @@ basado en Fedora 44. El sistema es compatible con XAMPP.
 Clonar el repositorio:
 
 ```bash
-git clone https://github.com/KazamXD/Proyectos_isw613/tree/master/Proyecto_1
+git clone https://github.com/KazamXD/Proyectos_isw613/
 ```
 
 También se puede descargar el proyecto como archivo ZIP.
