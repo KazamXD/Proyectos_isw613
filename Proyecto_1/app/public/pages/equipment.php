@@ -3,13 +3,90 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/connection.php';
 require_once __DIR__ . '/../../includes/csrf.php';
+require_once __DIR__ . '/../../includes/recent_equipment.php';
 
 // Solo usuarios autorizados pueden consultar reportes
 requerirPermiso($conn, 'equipos.ver');
 $tokenCSRF = generarTokenCSRF();
 $puedeEliminar = tienePermiso($conn, 'equipos.eliminar');
 
+// Obtener el equipo que el usuario desea consultar
+$equipoConsultadoId = filter_var(
+    $_GET['ver'] ?? null,
+    FILTER_VALIDATE_INT
+);
 
+$equipoConsultado = null;
+
+if ($equipoConsultadoId !== false && $equipoConsultadoId !== null && $equipoConsultadoId > 0) {
+
+    // Comprobar que el equipo existe y no está eliminado
+    $stmt = $conn->prepare("
+        SELECT
+            e.id_equipo,
+            e.codigo,
+            e.nombre_estado,
+            c.categoria_nombre
+        FROM equipos e
+        INNER JOIN categorias c
+            ON e.id_categoria = c.categoria_id
+        WHERE e.id_equipo = :id
+          AND e.eliminado_en IS NULL
+        LIMIT 1
+    ");
+
+    $stmt->execute([
+        'id' => $equipoConsultadoId
+    ]);
+
+    $equipoConsultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($equipoConsultado) {
+        registrarEquipoReciente((int) $equipoConsultado['id_equipo']);
+    }
+}
+
+// Obtener los identificadores recientes
+$idsRecientes = obtenerEquiposRecientes();
+
+$equiposRecientes = [];
+
+if (!empty($idsRecientes)) {
+
+    // Crear un marcador por cada ID
+    $marcadores = implode(
+        ',',
+        array_fill(0, count($idsRecientes), '?')
+    );
+
+    $stmt = $conn->prepare("
+        SELECT
+            id_equipo,
+            codigo,
+            nombre_estado
+        FROM equipos
+        WHERE id_equipo IN ($marcadores)
+          AND eliminado_en IS NULL
+    ");
+
+    $stmt->execute($idsRecientes);
+
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Organizar por ID para facilitar la búsqueda
+    $equiposPorId = [];
+
+    foreach ($resultados as $equipo) {
+        $equiposPorId[(int) $equipo['id_equipo']] = $equipo;
+    }
+
+    // Conservar el orden de la cookie: más reciente primero
+    foreach ($idsRecientes as $id) {
+        if (isset($equiposPorId[$id])) {
+            $equiposRecientes[] = $equiposPorId[$id];
+        }
+    }
+}
 
 //Ordenar datos de la tabla
 // Obtener el orden seleccionado
@@ -118,6 +195,47 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
         </div>
 
+        <?php if (!empty($equiposRecientes)): ?>
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+                        Equipos consultados recientemente
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <?php foreach ($equiposRecientes as $reciente): ?>
+
+                            <a
+                                href="equipment.php?<?= http_build_query([
+                                    'ver' => (int) $reciente['id_equipo']
+                                ]) ?>"
+                                class="btn btn-outline-primary"
+                            >
+                                <?= htmlspecialchars(
+                                    $reciente['codigo'],
+                                    ENT_QUOTES | ENT_SUBSTITUTE,
+                                    'UTF-8'
+                                ) ?>
+                            </a>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        <?php endif; ?>
+
         <!-- Mensajes -->
         <?php if (($_GET['success'] ?? '') === 'creado'): ?>
             <div class="alert alert-success">
@@ -139,6 +257,54 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="alert alert-success">
                 Equipo eliminado correctamente.
             </div>
+        <?php endif; ?>
+
+        <?php if ($equipoConsultado): ?>
+
+            <div class="card shadow-sm border-info mb-4">
+
+                <div class="card-header bg-info-subtle">
+                    <h5 class="mb-0">
+                        Equipo consultado
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <h5>
+                        <?= htmlspecialchars(
+                            $equipoConsultado['codigo'],
+                            ENT_QUOTES | ENT_SUBSTITUTE,
+                            'UTF-8'
+                        ) ?>
+                    </h5>
+
+                    <p class="mb-1">
+                        Categoría:
+                        <?= htmlspecialchars(
+                            $equipoConsultado['categoria_nombre'],
+                            ENT_QUOTES | ENT_SUBSTITUTE,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <p>
+                        Estado:
+                        <?= htmlspecialchars(
+                            $equipoConsultado['nombre_estado'],
+                            ENT_QUOTES | ENT_SUBSTITUTE,
+                            'UTF-8'
+                        ) ?>
+                    </p>
+
+                    <a href="equipment.php" class="btn btn-secondary btn-sm">
+                        Cerrar detalle
+                    </a>
+
+                </div>
+
+            </div>
+
         <?php endif; ?>
 
         <!-- Tarjeta principal -->
@@ -296,6 +462,14 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                     <!-- Acciones -->
                                     <td>
+                                        <a
+                                            href="equipment.php?<?= http_build_query([
+                                                'ver' => (int) $equipo['id_equipo']
+                                            ]) ?>"
+                                            class="btn btn-info btn-sm"
+                                        >
+                                            Ver
+                                        </a>
                                         <?php if (tienePermiso($conn, 'equipos.editar')): ?>
 
                                             <a
@@ -306,6 +480,7 @@ $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             </a>
 
                                         <?php endif; ?>
+
                                         <?php if ($puedeEliminar): ?>
                                             <form
                                                 action="../actions/delete_equipment.php"
