@@ -98,132 +98,286 @@ foreach ($equipos as $equipo) {
 
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Reporte de Inventario</title>
-    </head>
+<div class="d-flex">
 
-    <body>
-        <h1>Reporte de Inventario de Equipos</h1>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-        <h2>Resumen del inventario</h2>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-        <?php if (tienePermiso($conn, 'equipos.ver')): ?>
-        <p>
-            <a href="../actions/export_equipment.php">
-                Exportar equipos a CSV
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Reporte de Inventario
+                </h1>
+                <p class="text-muted mb-0">
+                    Consulta el inventario y los estados de los equipos.
+                </p>
+
+            </div>
+            <a
+                href="../actions/export_equipment.php?<?= http_build_query([
+                    'categoria' => $categoriaId,
+                    'estado' => $estado
+                ]) ?>"
+                class="btn btn-success"
+            >
+                Descargar CSV
             </a>
-        </p>
-    <?php endif; ?>
+        </div>
 
-        <ul>
-            <li>Total de equipos: <?= $totalEquipos ?></li>
-            <li>Disponibles: <?= $disponibles ?></li>
-            <li>Prestados: <?= $prestados ?></li>
-            <li>En mantenimiento: <?= $mantenimiento ?></li>
-        </ul>
+        <!-- Resumen -->
+        <h4 class="mb-3">
+            Resumen del inventario
+        </h4>
 
-        <hr>
+        <div class="row g-3 mb-4">
 
-        <h2>Filtros</h2>
+            <!-- Total -->
+            <div class="col-md-3">
+                <div class="card shadow-sm border-primary h-100">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">
+                            Total de equipos
+                        </h6>
+                        <h2 class="fw-bold text-primary">
+                            <?= (int) $totalEquipos ?>
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
-        <form method="GET" action="report_equipment.php">
-            <label for="categoria">Categoría:</label>
-            <select name="categoria" id="categoria">
-                <option value="0">Todas las categorías</option>
-                <?php foreach ($categorias as $categoria): ?>
-                    <option
-                        value="<?= (int) $categoria['categoria_id'] ?>"
-                        <?= $categoriaId === (int) $categoria['categoria_id']
-                            ? 'selected'
-                            : '' ?>
-                    >
-                        <?= htmlspecialchars(
-                            $categoria['categoria_nombre'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <label for="estado">Estado:</label>
-            <select name="estado" id="estado">
-                <option value="">Todos los estados</option>
-                <?php foreach ($estadosPermitidos as $opcion): ?>
-                    <option
-                        value="<?= htmlspecialchars(
-                            $opcion,
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>"
-                        <?= $estado === $opcion ? 'selected' : '' ?>
-                    >
-                        <?= htmlspecialchars(
-                            $opcion,
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit">Filtrar</button>
-            <a href="report_equipment.php">Limpiar filtros</a>
-        </form>
-        <hr>
+            <!-- Disponibles -->
+            <div class="col-md-3">
+                <div class="card shadow-sm border-success h-100">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">
+                            Disponibles
+                        </h6>
+                        <h2 class="fw-bold text-success">
+                            <?= (int) $disponibles ?>
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
-        <h2>Detalle de equipos</h2>
+            <!-- Prestados -->
+            <div class="col-md-3">
+                <div class="card shadow-sm border-warning h-100">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">
+                            Prestados
+                        </h6>
+                        <h2 class="fw-bold text-warning">
+                            <?= (int) $prestados ?>
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
-        <table border="1" cellpadding="8">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Código</th>
-                    <th>Categoría</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
+            <!-- Mantenimiento -->
+            <div class="col-md-3">
+                <div class="card shadow-sm border-danger h-100">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">
+                            En mantenimiento
+                        </h6>
+                        <h2 class="fw-bold text-danger">
+                            <?= (int) $mantenimiento ?>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <?php foreach ($equipos as $equipo): ?>
-                    <tr>
-                        <td>
-                            <?= (int) $equipo['id_equipo'] ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars(
-                                $equipo['codigo'],
-                                ENT_QUOTES | ENT_SUBSTITUTE,
-                                'UTF-8'
-                            ) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars(
-                                $equipo['categoria_nombre'],
-                                ENT_QUOTES | ENT_SUBSTITUTE,
-                                'UTF-8'
-                            ) ?>
-                        </td>
-                        <td>
-                            <?= htmlspecialchars(
-                                $equipo['nombre_estado'],
-                                ENT_QUOTES | ENT_SUBSTITUTE,
-                                'UTF-8'
-                            ) ?>
-                        </td>
+        <!-- Tarjeta del reporte -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Detalle del inventario
+                </h5>
+            </div>
 
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+            <div class="card-body">
 
-        <?php if (empty($equipos)): ?>
-            <p>No se encontraron equipos con los filtros seleccionados.</p>
-        <?php endif; ?>
-        <br>
-        <a href="dashboard.php">Volver al dashboard</a>
+                <!-- Filtros -->
+                <form
+                    method="GET"
+                    action="report_equipment.php"
+                    class="row g-3 mb-4"
+                >
 
-    </body>
-</html>
+                    <!-- Categoría -->
+                    <div class="col-md-5">
+                        <label for="categoria" class="form-label">
+                            Categoría
+                        </label>
+                        <select
+                            name="categoria"
+                            id="categoria"
+                            class="form-select"
+                        >
+                            <option value="0">
+                                Todas las categorías
+                            </option>
+                            <?php foreach ($categorias as $categoria): ?>
+                                <option
+                                    value="<?= (int) $categoria['categoria_id'] ?>"
+                                    <?= $categoriaId === (int) $categoria['categoria_id']
+                                        ? 'selected'
+                                        : '' ?>
+                                >
+                                    <?= htmlspecialchars(
+                                        $categoria['categoria_nombre'],
+                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                        'UTF-8'
+                                    ) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="col-md-4">
+                        <label for="estado" class="form-label">
+                            Estado
+                        </label>
+                        <select
+                            name="estado"
+                            id="estado"
+                            class="form-select"
+                        >
+                            <option value="">
+                                Todos los estados
+                            </option>
+                            <?php foreach ($estadosPermitidos as $opcion): ?>
+                                <option
+                                    value="<?= htmlspecialchars(
+                                        $opcion,
+                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                        'UTF-8'
+                                    ) ?>"
+                                    <?= $estado === $opcion ? 'selected' : '' ?>
+                                >
+                                    <?= htmlspecialchars(
+                                        $opcion,
+                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                        'UTF-8'
+                                    ) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Filtrar
+                        </button>
+                        <a
+                            href="report_equipment.php"
+                            class="btn btn-secondary"
+                        >
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Código</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <?php foreach ($equipos as $equipo): ?>
+                                <tr>
+
+                                    <!-- ID -->
+                                    <td>
+                                        <?= (int) $equipo['id_equipo'] ?>
+                                    </td>
+
+                                    <!-- Código -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $equipo['codigo'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Categoría -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $equipo['categoria_nombre'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Estado -->
+                                    <td>
+                                        <?php
+                                        $estadoEquipo = $equipo['nombre_estado'];
+                                        $claseEstado = match ($estadoEquipo) {
+                                            'Disponible' => 'bg-success',
+                                            'Prestado' => 'bg-warning text-dark',
+                                            'Mantenimiento' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                        ?>
+                                        <span class="badge <?= $claseEstado ?>">
+                                            <?= htmlspecialchars(
+                                                $estadoEquipo,
+                                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                                'UTF-8'
+                                            ) ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Sin resultados -->
+                <?php if (empty($equipos)): ?>
+                    <div class="alert alert-info">
+                        No se encontraron equipos con los filtros seleccionados.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <!-- Volver -->
+        <div class="mt-3">
+            <a
+                href="reports.php"
+                class="btn btn-secondary"
+            >
+                Volver a reportes
+            </a>
+        </div>
+    </main>
+</div>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

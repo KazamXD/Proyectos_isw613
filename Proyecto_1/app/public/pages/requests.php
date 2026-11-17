@@ -56,184 +56,267 @@ if ($puedeVerTodas) {
 $solicitudes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Solicitudes</title>
-</head>
-<body>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <h1>Solicitudes de equipos</h1>
+<div class="d-flex">
 
-    <!-- Mostrar mensaje de éxito si la solicitud fue aprobada -->
-    <?php if (($_GET['success'] ?? '') === 'aprobada'): ?>
-        <p style="color: green;">
-            Solicitud aprobada correctamente.
-        </p>
-    <?php endif; ?>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-    <!-- Mostrar mensaje de éxito si la solicitud fue rechazada -->
-     <?php if (($_GET['success'] ?? '') === 'rechazada'): ?>
-        <p style="color: green;">
-            Solicitud rechazada correctamente.
-        </p>
-    <?php endif; ?>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-    <!-- Mostrar mensaje de éxito si la solicitud fue cancelada -->
-     <?php if (($_GET['success'] ?? '') === 'cancelada'): ?>
-        <p style="color: green;">
-            Solicitud cancelada correctamente.
-        </p>
-    <?php endif; ?>
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Solicitudes de Equipos
+                </h1>
+                <p class="text-muted mb-0">
+                    Consulta y gestión de solicitudes de préstamo.
+                </p>
+            </div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Fecha de inicio</th>
-                <th>Fecha de devolución</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($solicitudes as $solicitud): ?>
-                <tr>
-                    <!-- Muestra el ID de la solicitud -->
-                    <td><?= (int) $solicitud['id_solicitud'] ?></td>
+            <?php if (tienePermiso($conn, 'solicitudes.crear')): ?>
+                <a
+                    href="request_form.php"
+                    class="btn btn-success"
+                >
+                    + Nueva solicitud
+                </a>
+            <?php endif; ?>
+        </div>
 
-                    <!-- Muestra el nombre del usuario en la tabla -->
-                    <td><?= htmlspecialchars(
-                        $solicitud['nom_usuario'],
-                        ENT_QUOTES | ENT_SUBSTITUTE,
-                        'UTF-8'
-                    ) ?></td>
+        <!-- Mensajes -->
+        <?php if (($_GET['success'] ?? '') === 'aprobada'): ?>
+            <div class="alert alert-success">
+                Solicitud aprobada correctamente.
+            </div>
+        <?php endif; ?>
 
-                    <!-- Muestra la fecha de inicio de la solicitud -->
-                    <td><?= htmlspecialchars(
-                        $solicitud['fecha_inicio'],
-                        ENT_QUOTES | ENT_SUBSTITUTE,
-                        'UTF-8'
-                    ) ?></td>
+        <?php if (($_GET['success'] ?? '') === 'rechazada'): ?>
+            <div class="alert alert-success">
+                Solicitud rechazada correctamente.
+            </div>
+        <?php endif; ?>
+        <?php if (($_GET['success'] ?? '') === 'cancelada'): ?>
+            <div class="alert alert-success">
+                Solicitud cancelada correctamente.
+            </div>
+        <?php endif; ?>
 
-                    <!-- Muestra la fecha de devolución de la solicitud -->
-                    <td><?= htmlspecialchars(
-                        $solicitud['fecha_fin'],
-                        ENT_QUOTES | ENT_SUBSTITUTE,
-                        'UTF-8'
-                    ) ?></td>
+        <!-- Tarjeta principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Solicitudes registradas
+                </h5>
+            </div>
 
-                    <!-- Muestra el estado de la solicitud -->
-                    <td><?= htmlspecialchars(
-                        $solicitud['estado'],
-                        ENT_QUOTES | ENT_SUBSTITUTE,
-                        'UTF-8'
-                    ) ?></td>
+            <div class="card-body">
 
-                    <!-- Muestra los botones de acción aprobar/rechazar -->
-                    <td>
-                        <?php if ($solicitud['estado'] === 'pendiente'): ?>
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Fecha de inicio</th>
+                                <th>Fecha de devolución</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
 
-                            <?php if ($puedeAprobar): ?>
-                                <form
-                                    action="../actions/approve_request.php"
-                                    method="POST"
-                                    style="display:inline;"
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="<?= htmlspecialchars(
-                                            $tokenCSRF,
+                        <tbody>
+                            <?php foreach ($solicitudes as $solicitud): ?>
+                                <tr>
+                                    <!-- ID -->
+                                    <td>
+                                        <?= (int) $solicitud['id_solicitud'] ?>
+                                    </td>
+
+                                    <!-- Usuario -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $solicitud['nom_usuario'],
                                             ENT_QUOTES | ENT_SUBSTITUTE,
                                             'UTF-8'
-                                        ) ?>"
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="solicitud_id"
-                                        value="<?= (int) $solicitud['id_solicitud'] ?>"
-                                    >
-                                    <button type="submit">Aprobar</button>
-                                </form>
-                            <?php endif; ?>
+                                        ) ?>
+                                    </td>
 
-                            <?php if ($puedeRechazar): ?>
-                                <form
-                                    action="../actions/reject_request.php"
-                                    method="POST"
-                                    style="display:inline;"
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="<?= htmlspecialchars(
-                                            $tokenCSRF,
+                                    <!-- Fecha de inicio -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $solicitud['fecha_inicio'],
                                             ENT_QUOTES | ENT_SUBSTITUTE,
                                             'UTF-8'
-                                        ) ?>"
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="solicitud_id"
-                                        value="<?= (int) $solicitud['id_solicitud'] ?>"
-                                    >
-                                    <label for="motivo_<?= (int)$solicitud['id_solicitud'] ?>"> Motivo: </label>
-                                    <input
-                                        type="text"
-                                        id="motivo_<?= (int)$solicitud['id_solicitud'] ?>"
-                                        name="motivo_rechazo"
-                                        maxlength="255"
-                                        placeholder="Motivo del rechazo"
-                                        required
-                                    >
-                                    <button type="submit">Rechazar</button>
-                                </form>
-                            <?php endif; ?>
-                        <?php else: ?>
-                            Sin acciones
-                        <?php endif; ?>
+                                        ) ?>
+                                    </td>
 
-                        <?php if (
-                        $puedeCancelar &&
-                        $solicitud['estado'] === 'pendiente' &&
-                        (int) $solicitud['usuario_id'] === (int) $_SESSION['usuario_id']
-                        ): ?>
-                        <form
-                            action="../actions/cancel_request.php"
-                            method="POST"
-                            style="display:inline;"
-                            onsubmit="return confirm('¿Seguro que deseas cancelar esta solicitud?');"
-                        >
-                            <input
-                                type="hidden"
-                                name="csrf_token"
-                                value="<?= htmlspecialchars(
-                                    $tokenCSRF,
-                                    ENT_QUOTES | ENT_SUBSTITUTE,
-                                    'UTF-8'
-                                ) ?>"
-                            >
-                            <input
-                                type="hidden"
-                                name="solicitud_id"
-                                value="<?= (int) $solicitud['id_solicitud'] ?>"
-                            >
-                            <button type="submit">
-                                Cancelar
-                            </button>
-                        </form>
+                                    <!-- Fecha de devolución -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $solicitud['fecha_fin'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
 
-                    <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <p>
-        <a href="dashboard.php">Volver al dashboard</a>
-    </p>
-</body>
-</html>
+                                    <!-- Estado -->
+                                    <td>
+                                        <?php
+                                        $estado = $solicitud['estado'];
+                                        $claseEstado = match ($estado) {
+                                            'pendiente' => 'bg-warning text-dark',
+                                            'aprobada' => 'bg-success',
+                                            'rechazada' => 'bg-danger',
+                                            'cancelada' => 'bg-secondary',
+                                            default => 'bg-secondary'
+                                        };
+                                        ?>
+                                        <span class="badge <?= $claseEstado ?>">
+                                            <?= htmlspecialchars(
+                                                ucfirst($estado),
+                                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                                'UTF-8'
+                                            ) ?>
+                                        </span>
+                                    </td>
+
+                                    <!-- Acciones -->
+                                    <td>
+                                        <?php if ($solicitud['estado'] === 'pendiente'): ?>
+
+                                            <!-- Aprobar -->
+                                            <?php if ($puedeAprobar): ?>
+                                                <form
+                                                    action="../actions/approve_request.php"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                >
+                                                    <input
+                                                        type="hidden"
+                                                        name="csrf_token"
+                                                        value="<?= htmlspecialchars(
+                                                            $tokenCSRF,
+                                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                                            'UTF-8'
+                                                        ) ?>"
+                                                    >
+                                                    <input
+                                                        type="hidden"
+                                                        name="solicitud_id"
+                                                        value="<?= (int) $solicitud['id_solicitud'] ?>"
+                                                    >
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-success btn-sm"
+                                                    >
+                                                        Aprobar
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+
+                                            <!-- Rechazar -->
+                                            <?php if ($puedeRechazar): ?>
+                                                <form
+                                                    action="../actions/reject_request.php"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                >
+                                                    <input
+                                                        type="hidden"
+                                                        name="csrf_token"
+                                                        value="<?= htmlspecialchars(
+                                                            $tokenCSRF,
+                                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                                            'UTF-8'
+                                                        ) ?>"
+                                                    >
+                                                    <input
+                                                        type="hidden"
+                                                        name="solicitud_id"
+                                                        value="<?= (int) $solicitud['id_solicitud'] ?>"
+                                                    >
+                                                    <input
+                                                        type="text"
+                                                        name="motivo_rechazo"
+                                                        class="form-control form-control-sm d-inline-block"
+                                                        style="width: 180px;"
+                                                        maxlength="255"
+                                                        placeholder="Motivo del rechazo"
+                                                        aria-label="Motivo del rechazo"
+                                                        required
+                                                    >
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-danger btn-sm"
+                                                    >
+                                                        Rechazar
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+
+                                            <!-- Cancelar -->
+                                            <?php if (
+                                                $puedeCancelar &&
+                                                (int) $solicitud['usuario_id'] === (int) $_SESSION['usuario_id']
+                                            ): ?>
+                                                <form
+                                                    action="../actions/cancel_request.php"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                    onsubmit="return confirm('¿Seguro que deseas cancelar esta solicitud?');"
+                                                >
+                                                    <input
+                                                        type="hidden"
+                                                        name="csrf_token"
+                                                        value="<?= htmlspecialchars(
+                                                            $tokenCSRF,
+                                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                                            'UTF-8'
+                                                        ) ?>"
+                                                    >
+                                                    <input
+                                                        type="hidden"
+                                                        name="solicitud_id"
+                                                        value="<?= (int) $solicitud['id_solicitud'] ?>"
+                                                    >
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-warning btn-sm"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-muted">
+                                                Sin acciones
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Sin solicitudes -->
+                <?php if (empty($solicitudes)): ?>
+                    <div class="alert alert-info">
+                        No hay solicitudes registradas.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </main>
+</div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

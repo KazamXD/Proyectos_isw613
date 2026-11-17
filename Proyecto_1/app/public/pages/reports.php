@@ -8,85 +8,128 @@ requerirPermiso($conn, 'reportes.ver');
 
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Reportes del Sistema</title>
-    </head>
+<div class="d-flex">
 
-    <body>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-        <h1>Reportes del Sistema</h1>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-        <p>
-            Selecciona el reporte que deseas consultar.
-        </p>
+        <!-- Encabezado -->
+        <div class="mb-4">
+            <h1 class="fw-bold mb-1">
+                Reportes del Sistema
+            </h1>
+            <p class="text-muted">
+                Consulta información y estadísticas de SIGEL.
+            </p>
+        </div>
 
-        <hr>
+        <!-- Tarjetas de reportes -->
+        <div class="row g-4">
+            <!-- Inventario -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            Inventario de Equipos
+                        </h5>
+                        <p class="card-text text-muted">
+                            Consulta los equipos registrados,
+                            sus categorías y estados actuales.
+                        </p>
+                        <div class="mt-auto">
+                            <a
+                                href="report_equipment.php"
+                                class="btn btn-primary"
+                            >
+                                Ver inventario
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <h2>Inventario de Equipos</h2>
+            <!-- Préstamos retrasados -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            Préstamos Retrasados
+                        </h5>
+                        <p class="card-text text-muted">
+                            Consulta los préstamos que superaron
+                            su fecha límite y todavía no han sido devueltos.
+                        </p>
+                        <div class="mt-auto">
+                            <a
+                                href="report_overdue.php"
+                                class="btn btn-danger"
+                            >
+                                Ver préstamos retrasados
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <p>
-            Consulta los equipos registrados, sus categorías
-            y estados actuales.
-        </p>
+            <!-- Historial de préstamos -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            Historial de Préstamos
+                        </h5>
+                        <p class="card-text text-muted">
+                            Consulta el historial de préstamos realizados,
+                            incluyendo préstamos activos, devueltos
+                            y retrasados.
+                        </p>
+                        <div class="mt-auto">
+                            <a
+                                href="report_history.php"
+                                class="btn btn-success"
+                            >
+                                Ver historial
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <a href="report_equipment.php">
-            Ver reporte de inventario
-        </a>
+            <!-- Bitácora -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            Bitácora del Sistema
+                        </h5>
+                        <p class="card-text text-muted">
+                            Consulta las operaciones realizadas por
+                            los usuarios, incluyendo creación,
+                            edición y eliminación de registros.
+                        </p>
+                        <div class="mt-auto">
+                            <a
+                                href="audit_log.php"
+                                class="btn btn-secondary"
+                            >
+                                Consultar bitácora
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 
-        <hr>
-
-        <h2>Préstamos Retrasados</h2>
-
-        <p>
-            Consulta los préstamos que superaron su fecha
-            límite y todavía no han sido devueltos.
-        </p>
-
-        <a href="report_overdue.php">
-            Ver préstamos retrasados
-        </a>
-
-        <hr>
-
-        <h2>Historial de Préstamos</h2>
-
-        <p>
-            Consulta el historial de préstamos realizados,
-            incluyendo préstamos activos y devueltos.
-        </p>
-
-        <p>
-            <a href="report_history.php">
-                Ver historial de préstamos
-            </a>
-        </p>
-
-        <hr>
-
-        <h2>Bitácora del Sistema</h2>
-
-        <p>
-            Consulta las operaciones realizadas por los usuarios,
-            como creación, edición y eliminación de registros.
-        </p>
-
-        <p>
-            <a href="audit_log.php">
-                Consultar bitácora
-            </a>
-        </p>
-
-        <hr>
-
-        <p>
-            <a href="dashboard.php">
-                Volver al dashboard
-            </a>
-        </p>
-
-    </body>
-</html>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

@@ -47,97 +47,199 @@ $stmt = $conn->prepare("
 $stmt->execute();
 $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Préstamos</title>
-    </head>
-    <body>
-        <h1>Listado de préstamos</h1>
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-        <?php if (tienePermiso($conn, 'prestamos.ver')): ?>
-            <p>
-                <a href="../actions/export_loans.php">
-                    Exportar préstamos a CSV
+<div class="d-flex">
+
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
+
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Gestión de Préstamos
+                </h1>
+                <p class="text-muted mb-0">
+                    Consulta y administración de préstamos de equipos.
+                </p>
+            </div>
+
+            <?php if (tienePermiso($conn, 'prestamos.crear')): ?>
+                <a
+                    href="loan_form.php"
+                    class="btn btn-success"
+                >
+                    + Nuevo préstamo
                 </a>
-            </p>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
-    <p>
-    Permiso para devolver:
-        <?= $puedeDevolver ? 'SÍ' : 'NO' ?>
-    </p>
+        <!-- Tarjeta principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Préstamos registrados
+                </h5>
+            </div>
+            <div class="card-body">
 
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Usuario</th>
-                    <th>Operador</th>
-                    <th>Equipos</th>
-                    <th>Fecha entrega</th>
-                    <th>Fecha límite</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($prestamos as $prestamo): ?>
-                    <tr>
-                        <td><?= (int)$prestamo['id_prestamo'] ?></td>
-                        <td><?= htmlspecialchars($prestamo['usuario'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($prestamo['operador'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($prestamo['equipos'] ?? 'Sin equipos', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($prestamo['fecha_entrega'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($prestamo['fecha_limite'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($prestamo['estado'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        
-                        <td>
-                            <?php if (
-                                $puedeDevolver &&
-                                $prestamo['estado'] !== 'devuelto' &&
-                                $prestamo['fecha_devolucion'] === null
-                            ): ?>
-                                <form
-                                    action="../actions/return_loan.php"
-                                    method="POST"
-                                    onsubmit="return confirm('¿Registrar la devolución de este préstamo?');"
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="<?= htmlspecialchars($tokenCSRF, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="prestamo_id"
-                                        value="<?= (int) $prestamo['id_prestamo'] ?>"
-                                    >
-                                    <button type="submit">
-                                        Registrar devolución
-                                    </button>
-                                </form>
-                            <?php elseif ($prestamo['estado'] === 'devuelto'): ?>
-                                Devuelto
-                            <?php else: ?>
-                                Sin acciones disponibles
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Operador</th>
+                                <th>Equipos</th>
+                                <th>Fecha entrega</th>
+                                <th>Fecha límite</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
 
-        <p>
-            <a href="dashboard.php">Volver al dashboard</a>
-        </p>
+                        <tbody>
+                            <?php foreach ($prestamos as $prestamo): ?>
+                                <tr>
+                                    <!-- ID -->
+                                    <td>
+                                        <?= (int) $prestamo['id_prestamo'] ?>
+                                    </td>
 
-        <?php if (tienePermiso($conn, 'prestamos.crear')): ?>
-            <p>
-                <a href="loan_form.php">Registrar nuevo préstamo</a>
-            </p>
-        <?php endif; ?>
+                                    <!-- Usuario -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['usuario'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
 
-    </body>
-</html>
+                                    <!-- Operador -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['operador'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Equipos -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['equipos'] ?? 'Sin equipos',
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Fecha entrega -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['fecha_entrega'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Fecha límite -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['fecha_limite'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Estado -->
+                                    <td>
+                                        <?php
+                                        $estado = $prestamo['estado'];
+                                        $claseEstado = match ($estado) {
+                                            'prestado' => 'bg-primary',
+                                            'devuelto' => 'bg-success',
+                                            'retrasado' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                        ?>
+                                        <span class="badge <?= $claseEstado ?>">
+                                            <?= htmlspecialchars(
+                                                ucfirst($estado),
+                                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                                'UTF-8'
+                                            ) ?>
+                                        </span>
+                                    </td>
+
+                                    <!-- Acciones -->
+                                    <td>
+                                        <?php if (
+                                            $puedeDevolver &&
+                                            $prestamo['estado'] !== 'devuelto' &&
+                                            $prestamo['fecha_devolucion'] === null
+                                        ): ?>
+                                            <form
+                                                action="../actions/return_loan.php"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Registrar la devolución de este préstamo?');"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= htmlspecialchars(
+                                                        $tokenCSRF,
+                                                        ENT_QUOTES | ENT_SUBSTITUTE,
+                                                        'UTF-8'
+                                                    ) ?>"
+                                                >
+                                                <input
+                                                    type="hidden"
+                                                    name="prestamo_id"
+                                                    value="<?= (int) $prestamo['id_prestamo'] ?>"
+                                                >
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary btn-sm"
+                                                >
+                                                    Registrar devolución
+                                                </button>
+                                            </form>
+                                            
+                                        <?php elseif ($prestamo['estado'] === 'devuelto'): ?>
+                                            <span class="badge bg-success">
+                                                Devuelto
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted">
+                                                Sin acciones disponibles
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Sin registros -->
+                <?php if (empty($prestamos)): ?>
+                    <div class="alert alert-info">
+                        No hay préstamos registrados.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </main>
+</div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

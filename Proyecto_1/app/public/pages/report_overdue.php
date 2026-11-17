@@ -96,119 +96,210 @@ $totalRetrasados = count($prestamos);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<?php require_once __DIR__ . '/../../includes/header.php'; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Reporte de Préstamos Retrasados</title>
-</head>
+<div class="d-flex">
 
-<body>
-    <h1>Reporte de Préstamos Retrasados</h1>
-    <h2>Resumen</h2>
-    <p>
-        Total de préstamos retrasados:
-        <strong><?= $totalRetrasados ?></strong>
-    </p>
-    <hr>
+    <!-- Menú lateral -->
+    <aside
+        class="bg-dark text-white"
+        style="width: 250px; min-height: 100vh; flex-shrink: 0;"
+    >
+        <?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+    </aside>
 
-    <h2>Buscar préstamos</h2>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 p-4">
 
-    <form method="GET" action="report_overdue.php">
-        <label for="buscar">Buscar usuario:</label>
-        <input
-            type="text"
-            id="buscar"
-            name="buscar"
-            placeholder="Nombre, apellido o usuario"
-            value="<?= htmlspecialchars(
-                $busqueda,
-                ENT_QUOTES | ENT_SUBSTITUTE,
-                'UTF-8'
-            ) ?>"
-        >
-        <button type="submit">Buscar</button>
-        <a href="report_overdue.php">Limpiar búsqueda</a>
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">
+                    Préstamos Retrasados
+                </h1>
+                <p class="text-muted mb-0">
+                    Consulta los préstamos que superaron su fecha límite de devolución.
+                </p>
+            </div>
 
-    </form>
-    <hr>
+            <!-- Exportación CSV -->
+            <a
+                href="../actions/export_loans.php?<?= http_build_query([
+                    'tipo' => 'overdue',
+                    'buscar' => $busqueda
+                ]) ?>"
+                class="btn btn-success"
+            >
+                Descargar CSV
+            </a>
+        </div>
 
-    <p>
-        <a href="../actions/export_loans.php?<?= http_build_query([
-            'tipo' => 'overdue',
-            'buscar' => $busqueda
-        ]) ?>">
-            Descargar CSV
-        </a>
-    </p>
+        <!-- Resumen -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-danger">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">
+                            Total de préstamos retrasados
+                        </h6>
+                        <h2 class="fw-bold text-danger">
+                            <?= (int) $totalRetrasados ?>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <h2>Detalle de préstamos retrasados</h2>
+        <!-- Tarjeta principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    Detalle de préstamos retrasados
+                </h5>
+            </div>
 
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>ID préstamo</th>
-                <th>Usuario</th>
-                <th>Nombre completo</th>
-                <th>Equipos</th>
-                <th>Fecha de préstamo</th>
-                <th>Fecha límite</th>
-                <th>Horas de retraso</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($prestamos as $prestamo): ?>
-                <tr>
-                    <td>
-                        <?= (int) $prestamo['id_prestamo'] ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(
-                            $prestamo['nom_usuario'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(
-                            $prestamo['nombre'] . ' ' . $prestamo['apellido'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(
-                            $prestamo['equipos'] ?? 'Sin equipos',
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(
-                            $prestamo['fecha_entrega'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(
-                            $prestamo['fecha_limite'],
-                            ENT_QUOTES | ENT_SUBSTITUTE,
-                            'UTF-8'
-                        ) ?>
-                    </td>
-                    <td>
-                        <?= (int) $prestamo['horas_retraso'] ?> horas
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <?php if (empty($prestamos)): ?>
-        <p>No se encontraron préstamos retrasados.</p>
-    <?php endif; ?>
-    <br>
-    <a href="reports.php">Volver a reportes</a>
-</body>
-</html>
+            <div class="card-body">
+
+                <!-- Filtro de búsqueda -->
+                <form
+                    method="GET"
+                    action="report_overdue.php"
+                    class="row g-3 mb-4"
+                >
+                    <div class="col-md-7">
+                        <label for="buscar" class="form-label">
+                            Buscar usuario
+                        </label>
+                        <input
+                            type="text"
+                            id="buscar"
+                            name="buscar"
+                            class="form-control"
+                            placeholder="Nombre, apellido o usuario"
+                            value="<?= htmlspecialchars(
+                                $busqueda,
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?>"
+                        >
+                    </div>
+
+                    <div class="col-md-5 d-flex align-items-end gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Buscar
+                        </button>
+                        <a
+                            href="report_overdue.php"
+                            class="btn btn-secondary"
+                        >
+                            Limpiar búsqueda
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Tabla -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID préstamo</th>
+                                <th>Usuario</th>
+                                <th>Nombre completo</th>
+                                <th>Equipos</th>
+                                <th>Fecha de préstamo</th>
+                                <th>Fecha límite</th>
+                                <th>Horas de retraso</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <?php foreach ($prestamos as $prestamo): ?>
+                                <tr>
+                                    <!-- ID -->
+                                    <td>
+                                        <?= (int) $prestamo['id_prestamo'] ?>
+                                    </td>
+
+                                    <!-- Usuario -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['nom_usuario'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Nombre completo -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['nombre'] . ' ' . $prestamo['apellido'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Equipos -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['equipos'] ?? 'Sin equipos',
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Fecha de préstamo -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['fecha_entrega'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Fecha límite -->
+                                    <td>
+                                        <?= htmlspecialchars(
+                                            $prestamo['fecha_limite'],
+                                            ENT_QUOTES | ENT_SUBSTITUTE,
+                                            'UTF-8'
+                                        ) ?>
+                                    </td>
+
+                                    <!-- Horas de retraso -->
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            <?= (int) $prestamo['horas_retraso'] ?>
+                                            horas
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Sin resultados -->
+                <?php if (empty($prestamos)): ?>
+                    <div class="alert alert-success">
+                        No se encontraron préstamos retrasados.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Volver -->
+        <div class="mt-3">
+            <a
+                href="reports.php"
+                class="btn btn-secondary"
+            >
+                Volver a reportes
+            </a>
+        </div>
+    </main>
+</div>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
