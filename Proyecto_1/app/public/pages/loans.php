@@ -166,7 +166,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php
                                         $estado = $prestamo['estado'];
                                         $claseEstado = match ($estado) {
-                                            'prestado' => 'bg-primary',
+                                            'prestado' => 'bg-warning',
                                             'devuelto' => 'bg-success',
                                             'retrasado' => 'bg-danger',
                                             default => 'bg-secondary'

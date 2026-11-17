@@ -61,7 +61,6 @@ $error = $_GET['error'] ?? '';
                 <form action="../actions/create_category.php" method="POST">
 
                     <div class="row g-3">
-
                         <input
                             type="hidden"
                             name="csrf_token"
@@ -100,10 +99,8 @@ $error = $_GET['error'] ?? '';
                              <button type="submit" class="btn btn-primary">Guardar categoría</button>
                         </div>
 
-                       
                     </div>
                 </form>
-
             </div>
         </div>
     </main>

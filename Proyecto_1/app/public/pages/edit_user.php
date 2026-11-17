@@ -50,6 +50,7 @@ $roles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $tokenCSRF = generarTokenCSRF();
 
+// Errores
 $errores = [
     'campos' => 'Revisa los datos ingresados.',
     'duplicado' => 'El correo o nombre de usuario ya está registrado.',

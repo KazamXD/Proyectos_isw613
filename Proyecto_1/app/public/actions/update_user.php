@@ -259,6 +259,7 @@ try {
     );
     exit;
 
+    // Si no se encuentra el usuario
 } catch (RuntimeException $e) {
 
     if ($conn->inTransaction()) {
@@ -268,6 +269,7 @@ try {
     http_response_code(404);
     exit('Usuario no disponible.');
 
+    // Si hubo error al editar el usuario
 } catch (Throwable $e) {
 
     if ($conn->inTransaction()) {

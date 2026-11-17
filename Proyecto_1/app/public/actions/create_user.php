@@ -67,8 +67,6 @@ if (
 
 try {
     // Verificar si el nombre de usuario ya existe
-    
-    
     // Verificar si el usuario o correo ya existen
     $stmt = $conn->prepare("
         SELECT nom_usuario, email
