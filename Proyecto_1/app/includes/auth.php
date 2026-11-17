@@ -4,6 +4,7 @@
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/../config/connection.php';
 require_once __DIR__ . '/remember.php';
+require_once __DIR__ . '/../config/paths.php';
 
 // Comprobar si hay un usuario autenticado
 function estaAutenticado(): bool
@@ -35,7 +36,7 @@ function verificarUsuarioActivo(PDO $conn): void
     // Si el usuario fue desactivado o eliminado
     if (!$usuario) {
         cerrarSesionActual();
-        header('Location: /Proyecto_1/app/public/index.php');
+        header('Location: ' . BASE_URL . '/index.php');
         exit;
     }
 
@@ -55,7 +56,7 @@ function requerirLogin(): void
 
     // Si no se pudo recuperar, enviar al login
     if (!estaAutenticado()) {
-        header('Location: /Proyecto_1/app/public/index.php');
+        header('Location: ' . BASE_URL . '/index.php');
         exit;
     }
 

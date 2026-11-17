@@ -1,4 +1,6 @@
+
 <?php
+require_once __DIR__ . '/../config/paths.php';
 
 const COOKIE_EQUIPOS_RECIENTES = 'sigel_recent_equipment';
 const MAX_EQUIPOS_RECIENTES = 5;
@@ -72,7 +74,7 @@ function registrarEquipoReciente(int $equipoId): void
         json_encode($equipos),
         [
             'expires' => time() + (60 * 60 * 24 * 30),
-            'path' => '/Proyecto_1/app/public',
+            'path' => BASE_URL . '/',
             'secure' => $esHttps,
             'httponly' => true,
             'samesite' => 'Lax'

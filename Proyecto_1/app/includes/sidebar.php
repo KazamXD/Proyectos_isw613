@@ -1,3 +1,5 @@
+
+<?php require_once __DIR__ . '/../config/paths.php'; ?>
 <?php
 
 // Se espera que la página haya cargado auth.php y connection.php
@@ -16,8 +18,7 @@
         <li class="nav-item">
             <a
                 class="nav-link text-white"
-                href="/Proyecto_1/app/public/pages/dashboard.php"
-            >
+                href="<?= BASE_URL ?>/pages/dashboard.php">
                 Dashboard
             </a>
         </li>
@@ -27,7 +28,7 @@
             <li class="nav-item">
                 <a
                     class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/users.php"
+                    href="<?= BASE_URL ?>/pages/users.php"
                 >
                     Usuarios
                 </a>
@@ -40,7 +41,7 @@
             <li class="nav-item">
                 <a
                     class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/categories.php"
+                    href="<?= BASE_URL ?>/pages/categories.php"
                 >
                     Categorías
                 </a>
@@ -53,7 +54,7 @@
             <li class="nav-item">
                 <a
                     class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/equipment.php"
+                    href="<?= BASE_URL ?>/pages/equipment.php"
                 >
                     Equipos
                 </a>
@@ -65,8 +66,8 @@
 
             <li class="nav-item">
                 <a
-                    class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/loans.php"
+                   class="nav-link text-white"
+                   href="<?= BASE_URL ?>/pages/loans.php"
                 >
                     Préstamos
                 </a>
@@ -82,7 +83,7 @@
             <li class="nav-item">
                 <a
                     class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/requests.php"
+                    href="<?= BASE_URL ?>/pages/requests.php"
                 >
                     Solicitudes
                 </a>
@@ -95,7 +96,7 @@
             <li class="nav-item">
                 <a
                     class="nav-link text-white"
-                    href="/Proyecto_1/app/public/pages/reports.php"
+                    href="<?= BASE_URL ?>/pages/reports.php"
                 >
                     Reportes
                 </a>
@@ -107,8 +108,8 @@
 
         <li class="nav-item">
             <a
-                class="nav-link text-danger"
-                href="/Proyecto_1/app/public/actions/logout.php"
+                class="nav-link text-white"
+                href="<?= BASE_URL ?>/actions/logout.php"
             >
                 Cerrar sesión
             </a>
